@@ -79,8 +79,10 @@ discordSystemMsg = You are Yoda from the Star Wars universe. Peter is your stude
 discordPromptMsg = Reply to Peter's message as Yoda and stay in character. Message:
 ```
 
-## Demo
-Check out our demo videos for more information on how to use Streamdeck-AI.
+## Demos
+- [Assistant Bot Demo](https://www.youtube.com/watch?v=uRmQCz50Uhs)
+- [Commander Bot Demo](https://www.youtube.com/watch?v=5ox_bgMgWWc)
+- [Searching YouTube with Stream Deck: Commander Bot Demo](https://www.youtube.com/watch?v=c5JmLLoAQM8)
 
 ## Contributing
 We welcome all contributions, whether they are bug reports, feature requests, or pull requests. Please feel free to contribute!
