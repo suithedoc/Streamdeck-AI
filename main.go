@@ -280,7 +280,7 @@ func main() {
 		return
 	}
 
-	properties, err := LoadPropertiesFromFile("config.ini")
+	properties, err := LoadPropertiesFromIniFile("config.ini")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -294,7 +294,8 @@ func main() {
 		panic(err)
 	}
 
-	speech = &htgotts.Speech{Folder: "audio", Language: voices.English, Handler: &handlers.Native{}}
+	//speech = &htgotts.Speech{Folder: "audio", Language: voices.English, Handler: &handlers.Native{}}
+	speech = &htgotts.Speech{Folder: "audio", Language: voices.German, Handler: &handlers.Native{}}
 	client = openai.NewClient(properties["apiKey"])
 
 	if properties["whatsapp"] == "enabled" {
@@ -306,16 +307,16 @@ func main() {
 	}
 
 	commanderChatContent := bots.InitCommanderGPTBot(client, device, properties, streamdeckHandler, scanner, 0, 5)
-	assistantChatContent := bots.InitAssistantGPTBot(client, device, properties, streamdeckHandler, speech, 1, 6)
+	assistantChatContent := bots.InitAssistantGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 1, 6, 11)
 	bots.InitWhisperBot(streamdeckHandler, device, &kb, client, 2)
 	bots.InitMinecraftGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 3)
 	bots.InitCodeGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 4)
 
-	err = InitWakeWordCommander(properties, commanderChatContent, &kb, client)
-	if err != nil {
-		log.Printf("initializing wakeword: %v", err)
-		os.Exit(1)
-	}
+	//err = InitWakeWordCommander(properties, commanderChatContent, &kb, client)
+	//if err != nil {
+	//	log.Printf("initializing wakeword: %v", err)
+	//	os.Exit(1)
+	//}
 
 	//evaluators.InitGoogooGPTBot(client, device, properties, streamdeckHandler, scanner, 10, 11)
 	err = StartListenStreamDeckAsync(device)

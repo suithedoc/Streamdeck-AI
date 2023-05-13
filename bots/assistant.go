@@ -4,13 +4,17 @@ import (
 	"OpenAITest/model"
 	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
+	"context"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
 	htgotts "github.com/hegedustibor/htgo-tts"
+	"github.com/micmonay/keybd_event"
 	"github.com/muesli/streamdeck"
 	"github.com/sashabaranov/go-openai"
+	"golang.design/x/clipboard"
 	"log"
 	"strings"
+	"time"
 )
 
 var assistantCompletionHistory []openai.ChatCompletionMessage
@@ -37,7 +41,7 @@ func EvaluateAssistantGptResponseStrings(input []string, withHistory bool, chatC
 	result := markdown.Render(answer, 80, 6)
 	fmt.Println(string(result))
 
-	chunks := utils.SplitStringIntoWordChunks(answer, 100)
+	chunks := utils.SplitStringIntoLogicalChunks(answer, 100)
 	for _, chunk := range chunks {
 		err = speech.Speak(chunk)
 		if err != nil {
@@ -48,7 +52,8 @@ func EvaluateAssistantGptResponseStrings(input []string, withHistory bool, chatC
 }
 
 func InitAssistantGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
-	streamdeckHandler *model.StreamdeckHandler, speech *htgotts.Speech, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
+	streamdeckHandler *model.StreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding,
+	buttonWithoutHistory int16, buttonWithHistory int16, buttonWithHistoryAndCopy int16) *model.ChatContent {
 	assistantCompletionHistory = []openai.ChatCompletionMessage{}
 	assistantChatContent := model.ChatContent{
 		SystemMsg:       properties["assistantSystemMsg"],
@@ -116,6 +121,66 @@ func InitAssistantGPTBot(client *openai.Client, device *streamdeck.Device, prope
 				return nil
 			},
 		)
+	}
+
+	if buttonWithHistoryAndCopy >= 0 {
+		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithHistoryAndCopy), "HPAssistant")
+		if err != nil {
+			log.Fatal(err)
+		}
+		streamdeckHandler.AddOnPressHandler(int(buttonWithHistoryAndCopy), func() error {
+			go func() {
+				isRecording = true
+				utils.RecordAndSaveAudioAsMp3("audioAssistHistPaste.wav", quitChannel, finished)
+			}()
+			return nil
+		})
+		streamdeckHandler.AddOnReleaseHandler(
+			int(buttonWithHistoryAndCopy),
+			func() error {
+				if !isRecording {
+					return nil
+				}
+				quitChannel <- true
+				<-finished
+				isRecording = false
+				transcription, err := utils.ParseMp3ToText("audioAssistHistPaste.wav", client)
+				if err != nil {
+					fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
+					return nil
+				}
+				respChan := clipboard.Watch(context.Background(), clipboard.FmtText)
+				err = utils.CopySelectionToClipboard(kb)
+				if err != nil {
+					return err
+				}
+
+				// Wait for respChan 4 Seconds
+				clipboardContent := ""
+				var clipboardContentBytes []byte
+				select {
+				case <-time.After(4 * time.Second):
+					log.Println("timeout waiting for clipboard")
+					clipboardContentBytes = clipboard.Read(clipboard.FmtText)
+				case clipboardContentBytes = <-respChan:
+				}
+				if clipboardContentBytes != nil {
+					clipboardContent = string(clipboardContentBytes)
+				}
+				if string(clipboardContent) != "" {
+					transcription = fmt.Sprintf("%s\n%s", transcription, string(clipboardContent))
+				} else {
+					err := speech.Speak("Kein text im Clipboard gefunden")
+					if err != nil {
+						return err
+					}
+					return nil
+				}
+
+				EvaluateAssistantGptResponseStrings([]string{transcription}, true, assistantChatContent, client, speech)
+
+				return nil
+			})
 	}
 
 	return &assistantChatContent

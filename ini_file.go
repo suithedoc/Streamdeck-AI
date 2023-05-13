@@ -1,11 +1,41 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"gopkg.in/ini.v1"
+	"io"
+	"os"
 )
 
-func LoadPropertiesFromFile(filepath string) (map[string]string, error) {
+func LoadPropertiesFromJsonFile(filename string) (map[string]interface{}, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Printf("error closing file: %v", err)
+		}
+	}(file)
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	var parsedData map[string]interface{}
+	err = json.Unmarshal(data, &parsedData)
+	if err != nil {
+		return nil, err
+	}
+
+	return parsedData, nil
+}
+
+func LoadPropertiesFromIniFile(filepath string) (map[string]string, error) {
 	// Load the INI file
 	cfg, err := ini.Load(filepath)
 	if err != nil {

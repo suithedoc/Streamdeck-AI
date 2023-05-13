@@ -10,6 +10,37 @@ import (
 	"strings"
 )
 
+func SplitStringByDot(input string) []string {
+	return strings.Split(input, ".")
+}
+
+func SplitStringByComma(input string) []string {
+	return strings.Split(input, ",")
+}
+
+func SplitStringIntoLogicalChunks(input string, chunkSize int) []string {
+	splitStringByDot := SplitStringByDot(input)
+	var result []string
+	//currentChunk := ""
+
+	for _, sentence := range splitStringByDot {
+		if len(sentence) < chunkSize {
+			result = append(result, sentence)
+			continue
+		}
+		commaSplit := SplitStringByComma(sentence)
+		for _, commaSentence := range commaSplit {
+			if len(commaSentence) < chunkSize {
+				result = append(result, commaSentence)
+				continue
+			}
+			chunks := SplitStringIntoWordChunks(commaSentence, chunkSize)
+			result = append(result, chunks...)
+		}
+	}
+	return result
+}
+
 func SplitStringIntoWordChunks(input string, chunkSize int) []string {
 	var result []string
 	words := strings.Fields(input)
