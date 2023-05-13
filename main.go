@@ -4,6 +4,7 @@ import (
 	"OpenAITest/bots"
 	"OpenAITest/model"
 	"OpenAITest/utils"
+	"OpenAITest/wakeword"
 	"bufio"
 	"bytes"
 	"fmt"
@@ -170,6 +171,83 @@ func eventHandler(evt interface{}) {
 	}
 }
 
+func InitWakeWordCommander(properties map[string]string, commanderChatContent *model.ChatContent, kb *keybd_event.KeyBonding, client *openai.Client) (err error) {
+	porcupineAccessKey := properties["PorcupineAccessKey"]
+	wakeWordChannel := make(chan bool)
+	go func() {
+		err = wakeword.StartListeningToWakeword("jarvis", 0.3, porcupineAccessKey, wakeWordChannel)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	go func() {
+		finishedChannel := make(chan bool, 2)
+		for {
+			select {
+			case <-wakeWordChannel:
+				fmt.Println("Wake word detected")
+				err := speech.Speak("Yes master?")
+				if err != nil {
+					log.Fatal(err)
+				}
+				time.Sleep(time.Millisecond * 200)
+				utils.RecordAndSaveAudioAsWav("test.wav", time.Millisecond*800, finishedChannel)
+				//case <-finishedChannel:
+				fmt.Println("Finished recording")
+				transcription, err := utils.ParseMp3ToText("test.wav", client)
+				if err != nil {
+					fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
+				}
+				bots.EvaluateCommanderGptResponseStrings([]string{transcription}, false, nil, *commanderChatContent, client)
+				//err = bots.TypeWhisperSTT(transcription, kb)
+				//if err != nil {
+				//	fmt.Printf("Error typing whisper: %s\n", err)
+				//}
+				finishedChannel = make(chan bool, 2)
+			}
+		}
+	}()
+	return nil
+}
+
+func InitWakeWord(properties map[string]string, kb *keybd_event.KeyBonding) (err error) {
+	porcupineAccessKey := properties["PorcupineAccessKey"]
+	wakeWordChannel := make(chan bool)
+	go func() {
+		err = wakeword.StartListeningToWakeword("computer", 0.3, porcupineAccessKey, wakeWordChannel)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	go func() {
+		finishedChannel := make(chan bool, 2)
+		for {
+			select {
+			case <-wakeWordChannel:
+				fmt.Println("Wake word detected")
+				err := speech.Speak("Yes master?")
+				if err != nil {
+					log.Fatal(err)
+				}
+				time.Sleep(time.Millisecond * 200)
+				utils.RecordAndSaveAudioAsWav("test.wav", time.Millisecond*800, finishedChannel)
+				//case <-finishedChannel:
+				fmt.Println("Finished recording")
+				transcription, err := utils.ParseMp3ToText("test.wav", client)
+				if err != nil {
+					fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
+				}
+				err = bots.TypeWhisperSTT(transcription, kb)
+				if err != nil {
+					fmt.Printf("Error typing whisper: %s\n", err)
+				}
+				finishedChannel = make(chan bool, 2)
+			}
+		}
+	}()
+	return nil
+}
+
 func main() {
 	var err error
 
@@ -232,6 +310,13 @@ func main() {
 	bots.InitWhisperBot(streamdeckHandler, device, &kb, client, 2)
 	bots.InitMinecraftGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 3)
 	bots.InitCodeGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 4)
+
+	err = InitWakeWordCommander(properties, commanderChatContent, &kb, client)
+	if err != nil {
+		log.Printf("initializing wakeword: %v", err)
+		os.Exit(1)
+	}
+
 	//evaluators.InitGoogooGPTBot(client, device, properties, streamdeckHandler, scanner, 10, 11)
 	err = StartListenStreamDeckAsync(device)
 	if err != nil {
@@ -250,6 +335,33 @@ func main() {
 
 	c = fcolor.New(fcolor.FgCyan).Add(fcolor.BgWhite)
 	// Scanner
+
+	err = InitWakeWord(properties, &kb)
+	if err != nil {
+		log.Printf("initializing wakeword: %v", err)
+
+		log.Fatal(err)
+	}
+
+	//porcupineAccessKey := properties["PorcupineAccessKey"]
+	//wakeWordChannel := make(chan bool)
+	//go func() {
+	//	err = wakeword.StartListeningToWakeword("computer", 0.3, porcupineAccessKey, wakeWordChannel)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//}()
+	//go func() {
+	//	for {
+	//		select {
+	//		case <-wakeWordChannel:
+	//			err := speech.Speak("Yes master?")
+	//			if err != nil {
+	//				log.Fatal(err)
+	//			}
+	//		}
+	//	}
+	//}()
 
 	for {
 		if !isRecording {

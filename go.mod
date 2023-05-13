@@ -5,6 +5,8 @@ go 1.20
 require (
 	git.tcp.direct/kayos/sendkeys v0.0.0-20211216174833-565f782ccf21
 	github.com/MichaelMure/go-term-markdown v0.1.4
+	github.com/Picovoice/porcupine/binding/go/v2 v2.2.0
+	github.com/Picovoice/pvrecorder/sdk/go v1.1.1
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/fatih/color v1.9.0
@@ -44,6 +46,7 @@ require (
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-pointer v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
+	github.com/maxhawkins/go-webrtcvad v0.0.0-20210121163624-be60036f3083 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.1 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
@@ -57,3 +60,6 @@ require (
 	golang.org/x/sys v0.6.0 // indirect
 	rsc.io/qr v0.2.0 // indirect
 )
+
+//replace github.com/tinyzimmer/go-gst => github.com/livekit/go-gst v0.2.34-0.20230210170313-8fc9f59623d4
+replace github.com/tinyzimmer/go-gst => /home/dennis/GolandProjects/go-gst

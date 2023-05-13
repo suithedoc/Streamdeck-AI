@@ -17,14 +17,23 @@ func TypeWhisperSTT(transcription string, kb *keybd_event.KeyBonding) error {
 	clipboard.Write(clipboard.FmtText, []byte(transcription))
 	time.Sleep(20 * time.Millisecond)
 	kb.HasCTRL(true)
+	kb.HasSHIFT(true)
 	kb.SetKeys(keybd_event.VK_V)
 	err := kb.Launching()
 	if err != nil {
 		fmt.Printf("Error launching keyboard: %v\n", err)
 		return err
 	}
-	time.Sleep(20 * time.Millisecond)
-	kb.HasCTRL(false)
+
+	kb.HasCTRL(true)
+	kb.HasSHIFT(false)
+	kb.SetKeys(keybd_event.VK_V)
+	err = kb.Launching()
+	if err != nil {
+		fmt.Printf("Error launching keyboard: %v\n", err)
+		return err
+	}
+
 	return nil
 }
 

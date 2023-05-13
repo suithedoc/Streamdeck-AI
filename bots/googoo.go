@@ -13,6 +13,10 @@ import (
 	"strings"
 )
 
+//1. use googler --noprompt to search for the question, download the first result and write the content
+//2. Remove al useless content
+//3. Use the content to answer the question
+
 var googooCompletionHistory []openai.ChatCompletionMessage
 
 func EvaluateGoogooGptResponseStrings(input []string, withHistory bool, scanner *bufio.Scanner, chatContent model.ChatContent, client *openai.Client) {

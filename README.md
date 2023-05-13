@@ -83,6 +83,7 @@ discordPromptMsg = Reply to Peter's message as Yoda and stay in character. Messa
 - [Assistant Bot Demo](https://www.youtube.com/watch?v=uRmQCz50Uhs)
 - [Commander Bot Demo](https://www.youtube.com/watch?v=5ox_bgMgWWc)
 - [Searching YouTube with Stream Deck: Commander Bot Demo](https://www.youtube.com/watch?v=c5JmLLoAQM8)
+- [Minecraft Helper Bot: Stream Deck Demo with OpenAI](https://youtu.be/OtLyS9CwQTw)
 
 ## Contributing
 We welcome all contributions, whether they are bug reports, feature requests, or pull requests. Please feel free to contribute!
