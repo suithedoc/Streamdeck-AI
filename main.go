@@ -280,6 +280,7 @@ func main() {
 		return
 	}
 
+	//properties, err :=LoadPropertiesFromJsonFile("config.json")
 	properties, err := LoadPropertiesFromIniFile("config.ini")
 	if err != nil {
 		log.Fatal(err)
