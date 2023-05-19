@@ -7,8 +7,8 @@ require (
 	github.com/MichaelMure/go-term-markdown v0.1.4
 	github.com/Picovoice/porcupine/binding/go/v2 v2.2.0
 	github.com/Picovoice/pvrecorder/sdk/go v1.1.1
+	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/bwmarrin/discordgo v0.27.1
-	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/fatih/color v1.9.0
 	github.com/flopp/go-findfont v0.1.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
@@ -18,6 +18,7 @@ require (
 	github.com/micmonay/keybd_event v1.1.1
 	github.com/muesli/streamdeck v0.4.0
 	github.com/sashabaranov/go-openai v1.5.7
+	github.com/serpapi/google-search-results-golang v0.0.0-20230501055731-fa34e87cb7f5
 	github.com/tinyzimmer/go-gst v0.2.33
 	go.mau.fi/whatsmeow v0.0.0-20230324171918-c7e156dca788
 	golang.design/x/clipboard v0.7.0
@@ -30,7 +31,7 @@ require (
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/MichaelMure/go-term-text v0.3.1 // indirect
 	github.com/alecthomas/chroma v0.10.0 // indirect
-	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
+	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/eliukblau/pixterm/pkg/ansimage v0.0.0-20191210081756-9fb6cf8c2f75 // indirect
@@ -46,9 +47,6 @@ require (
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-pointer v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
-	github.com/maxhawkins/go-webrtcvad v0.0.0-20210121163624-be60036f3083 // indirect
-	github.com/muesli/reflow v0.3.0 // indirect
-	github.com/muesli/termenv v0.15.1 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/stretchr/testify v1.8.1 // indirect
 	github.com/tinyzimmer/go-glib v0.0.25 // indirect

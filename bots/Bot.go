@@ -27,10 +27,10 @@ type AiBot struct {
 	StreamDeckButtonWithHistoryAndCopy int // Set to -1 to disable
 	streamdeckHandler                  *model.StreamdeckHandler
 	OpenaiClient                       *openai.Client
-	chatContent                        model.ChatContent
+	ChatContent                        model.ChatContent
 	speech                             *htgotts.Speech
 	keyBonding                         *keybd_event.KeyBonding
-	assistantCompletionHistory         []openai.ChatCompletionMessage
+	CompletionHistory                  []openai.ChatCompletionMessage
 	responseListeners                  []func(*AiBot, string) error
 }
 
@@ -63,7 +63,7 @@ func (bot *AiBot) init() {
 						fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
 						return nil
 					}
-					bot.EvaluateAssistantGptResponse([]string{transcription}, false, bot.chatContent, bot.OpenaiClient)
+					bot.EvaluateGptResponseStrings([]string{transcription})
 				}
 				return nil
 			},
@@ -93,7 +93,7 @@ func (bot *AiBot) init() {
 						fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
 						return nil
 					}
-					bot.EvaluateAssistantGptResponse([]string{transcription}, true, bot.chatContent, bot.OpenaiClient)
+					bot.EvaluateGptResponseStringsWithHistory([]string{transcription})
 				}
 				return nil
 			},
@@ -153,44 +153,63 @@ func (bot *AiBot) init() {
 					}
 					return nil
 				}
-				bot.EvaluateAssistantGptResponse([]string{transcription}, true, bot.chatContent, bot.OpenaiClient)
+				bot.EvaluateGptResponseStringsWithHistory([]string{transcription})
 				return nil
 			})
 	}
 }
 
-func (bot *AiBot) EvaluateAssistantGptResponse(input []string, withHistory bool, chatContent model.ChatContent, client *openai.Client) error {
+func (bot *AiBot) EvaluateAndReturnGptResponse(input []string, withHistory bool, chatContent model.ChatContent, client *openai.Client) (string, error) {
 	joinedRequestMessage := strings.Join(input, "\n")
 	if withHistory {
-		chatContent.HistoryMessages = bot.assistantCompletionHistory
+		chatContent.HistoryMessages = bot.CompletionHistory
 	} else {
-		bot.assistantCompletionHistory = []openai.ChatCompletionMessage{}
+		bot.CompletionHistory = []openai.ChatCompletionMessage{}
 	}
 	answer, err := utils.SendChatRequest(joinedRequestMessage, chatContent, client)
 	if err != nil {
 		log.Fatal(err)
 	}
-	bot.assistantCompletionHistory = append(bot.assistantCompletionHistory, openai.ChatCompletionMessage{
+	bot.CompletionHistory = append(bot.CompletionHistory, openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
 		Content: joinedRequestMessage,
 	})
-	bot.assistantCompletionHistory = append(bot.assistantCompletionHistory, openai.ChatCompletionMessage{
+	bot.CompletionHistory = append(bot.CompletionHistory, openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleAssistant,
 		Content: answer,
 	})
 	result := markdown.Render(answer, 80, 6)
 	fmt.Println(string(result))
 
+	return answer, nil
+}
+
+func (bot *AiBot) EvaluateGptResponseStringsWithHistory(requestLines []string) error {
+	response, err := bot.EvaluateAndReturnGptResponse(requestLines, true, bot.ChatContent, bot.OpenaiClient)
+	if err != nil {
+		return err
+	}
 	for _, responseListener := range bot.responseListeners {
-		responseListener(bot, answer)
+		responseListener(bot, response)
 	}
 	return nil
 }
 
-func (bot *AiBot) EvaluateGptResponseStringsWithHistory(requestLines []string) error {
-	return bot.EvaluateAssistantGptResponse(requestLines, true, bot.chatContent, bot.OpenaiClient)
+func (bot *AiBot) EvaluateGptResponseStrings(requestLines []string) error {
+	response, err := bot.EvaluateAndReturnGptResponse(requestLines, false, bot.ChatContent, bot.OpenaiClient)
+	if err != nil {
+		return err
+	}
+	for _, responseListener := range bot.responseListeners {
+		responseListener(bot, response)
+	}
+	return nil
 }
 
-func (bot *AiBot) EvaluateGptResponseStrings(requestLines []string) error {
-	return bot.EvaluateAssistantGptResponse(requestLines, false, bot.chatContent, bot.OpenaiClient)
+func (bot *AiBot) EvaluateAndReturn(requestLines []string) (string, error) {
+	return bot.EvaluateAndReturnGptResponse(requestLines, false, bot.ChatContent, bot.OpenaiClient)
+}
+
+func (bot *AiBot) EvaluateAndReturnWithHistory(requestLines []string) (string, error) {
+	return bot.EvaluateAndReturnGptResponse(requestLines, true, bot.ChatContent, bot.OpenaiClient)
 }

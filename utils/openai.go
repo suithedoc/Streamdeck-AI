@@ -3,7 +3,6 @@ package utils
 import (
 	"OpenAITest/model"
 	"context"
-	"fmt"
 	openai "github.com/sashabaranov/go-openai"
 )
 
@@ -13,12 +12,11 @@ var (
 
 func SendChatRequest(text string, chatContent model.ChatContent, client *openai.Client) (string, error) {
 
-	fmt.Printf("Sending chatContent. text:%v \n", text)
-	fmt.Println("chatHistory:")
-	for _, msg := range chatContent.HistoryMessages {
-		fmt.Printf("role: %v, content: %v \n", msg.Role, msg.Content)
-	}
-
+	//fmt.Printf("Sending chatContent. text:%v \n", text)
+	//fmt.Println("chatHistory:")
+	//for _, msg := range chatContent.HistoryMessages {
+	//	fmt.Printf("role: %v, content: %v \n", msg.Role, msg.Content)
+	//}
 	completionMessages := make([]openai.ChatCompletionMessage, 0)
 	completionMessages = append(completionMessages, openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleSystem,

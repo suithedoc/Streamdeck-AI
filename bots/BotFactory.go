@@ -41,13 +41,13 @@ func (bf *BotFactory) createBaseBot(name string, systemMsg string, promptMsg str
 		StreamdeckDevice:                   bf.StreamdeckDevice,
 		streamdeckHandler:                  bf.streamdeckHandler,
 		OpenaiClient:                       bf.OpenaiClient,
-		chatContent: model.ChatContent{
+		ChatContent: model.ChatContent{
 			SystemMsg:       systemMsg,
 			PromptMsg:       promptMsg,
 			HistoryMessages: make([]openai.ChatCompletionMessage, 0),
 		},
-		keyBonding:                 bf.keyBonding,
-		assistantCompletionHistory: make([]openai.ChatCompletionMessage, 0),
+		keyBonding:        bf.keyBonding,
+		CompletionHistory: make([]openai.ChatCompletionMessage, 0),
 	}
 	speech, ok := bf.speeches[speechLanguage]
 	if !ok {
