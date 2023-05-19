@@ -54,7 +54,6 @@ var (
 
 func init() {
 	echoWithColorQueue = make(chan EchoWithColor, 100)
-	streamdeckHandler = model.NewStreamdeckHandler()
 	utils.OpenaiModel = "gpt3.5"
 }
 
@@ -80,47 +79,48 @@ func AsyncConsoleOutput() {
 	}()
 }
 
-func StartListenStreamDeckAsync(device *streamdeck.Device) error {
-
-	go func() {
-		keys, err := device.ReadKeys()
-		if err != nil {
-			log.Fatal(err)
-		}
-		for {
-			select {
-			case key := <-keys:
-				fmt.Printf("Key pressed index %v, is pressed %v\n", key.Index, key.Pressed)
-				if key.Pressed {
-					if handler, ok := streamdeckHandler.GetOnPressHandler(int(key.Index)); ok {
-						err := handler()
-						if err != nil {
-							log.Fatal(err)
-						}
-					}
-				} else {
-					if handler, ok := streamdeckHandler.GetOnReleaseHandler(int(key.Index)); ok {
-						err := handler()
-						if err != nil {
-							log.Fatal(err)
-						}
-					}
-				}
-			}
-		}
-	}()
-
-	/*
-		ver, err := d.FirmwareVersion()
-		if err != nil {
-			return fmt.Errorf("can't retrieve device info: %s", err)
-		}
-		fmt.Printf("Found device with serial %s (firmware %s)\n",
-			d.Serial, ver)Hello, how are zou_ Hallo, wie geht es dir_ mir geht das eigentlich gany gut
-	*/
-
-	return nil
-}
+//
+//func StartListenStreamDeckAsync(device *streamdeck.Device) error {
+//
+//	go func() {
+//		keys, err := device.ReadKeys()
+//		if err != nil {
+//			log.Fatal(err)
+//		}
+//		for {
+//			select {
+//			case key := <-keys:
+//				fmt.Printf("Key pressed index %v, is pressed %v\n", key.Index, key.Pressed)
+//				if key.Pressed {
+//					if handler, ok := streamdeckHandler.GetOnPressHandler(int(key.Index)); ok {
+//						err := handler()
+//						if err != nil {
+//							log.Fatal(err)
+//						}
+//					}
+//				} else {
+//					if handler, ok := streamdeckHandler.GetOnReleaseHandler(int(key.Index)); ok {
+//						err := handler()
+//						if err != nil {
+//							log.Fatal(err)
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}()
+//
+//	/*
+//		ver, err := d.FirmwareVersion()
+//		if err != nil {
+//			return fmt.Errorf("can't retrieve device info: %s", err)
+//		}
+//		fmt.Printf("Found device with serial %s (firmware %s)\n",
+//			d.Serial, ver)Hello, how are zou_ Hallo, wie geht es dir_ mir geht das eigentlich gany gut
+//	*/
+//
+//	return nil
+//}
 
 func fetch(text string) (io.Reader, error) {
 	data := []byte(text)
@@ -269,6 +269,9 @@ func main() {
 			log.Fatal(err)
 		}
 	}(device)
+
+	streamdeckHandler = model.NewStreamdeckHandler(device)
+
 	kb, err = keybd_event.NewKeyBonding()
 	if err != nil {
 		panic(err)
@@ -307,8 +310,13 @@ func main() {
 		bots.InitDiscordBot(client, properties)
 	}
 
+	botFactory := bots.NewBotFactory(streamdeckHandler, client, device, &kb)
+
 	commanderChatContent := bots.InitCommanderGPTBot(client, device, properties, streamdeckHandler, scanner, 0, 5)
-	assistantChatContent := bots.InitAssistantGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 1, 6, 11)
+	//assistantBot := botFactory.CreateBot("Assistant", properties["assistantSystemMsg"], properties["assistantPromptMsg"], 1, 6, voices.German)
+	assistantBot := botFactory.CreateBotWithHistoryAndCopy("Assistant", properties["assistantSystemMsg"], properties["assistantPromptMsg"], 1, 6, 11, voices.German)
+
+	//assistantChatContent := bots.InitAssistantGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 1, 6, 11)
 	bots.InitWhisperBot(streamdeckHandler, device, &kb, client, 2)
 	bots.InitMinecraftGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 3)
 	bots.InitCodeGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 4)
@@ -320,10 +328,7 @@ func main() {
 	//}
 
 	//evaluators.InitGoogooGPTBot(client, device, properties, streamdeckHandler, scanner, 10, 11)
-	err = StartListenStreamDeckAsync(device)
-	if err != nil {
-		println(err.Error())
-	}
+	streamdeckHandler.StartAsync()
 
 	gst.Init(nil)
 	AsyncConsoleOutput()
@@ -400,10 +405,10 @@ func main() {
 		}
 
 		if strings.HasPrefix(input[0], "a:") {
-			bots.EvaluateAssistantGptResponseStrings(input, false, *assistantChatContent, client, speech)
+			assistantBot.EvaluateGptResponseStrings(input)
 			continue
 		} else if strings.HasPrefix(input[0], "ah:") {
-			bots.EvaluateAssistantGptResponseStrings(input, true, *assistantChatContent, client, speech)
+			assistantBot.EvaluateGptResponseStringsWithHistory(input)
 		} else if strings.HasPrefix(input[0], "h:") {
 			bots.EvaluateCommanderGptResponseStrings(input, true, scanner, *commanderChatContent, client)
 		} else {
