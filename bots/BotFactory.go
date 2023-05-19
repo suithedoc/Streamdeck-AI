@@ -46,7 +46,8 @@ func (bf *BotFactory) createBaseBot(name string, systemMsg string, promptMsg str
 			PromptMsg:       promptMsg,
 			HistoryMessages: make([]openai.ChatCompletionMessage, 0),
 		},
-		keyBonding: bf.keyBonding,
+		keyBonding:                 bf.keyBonding,
+		assistantCompletionHistory: make([]openai.ChatCompletionMessage, 0),
 	}
 	speech, ok := bf.speeches[speechLanguage]
 	if !ok {

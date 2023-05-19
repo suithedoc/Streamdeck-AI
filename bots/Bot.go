@@ -6,12 +6,14 @@ import (
 	"OpenAITest/utils"
 	"context"
 	"fmt"
+	markdown "github.com/MichaelMure/go-term-markdown"
 	htgotts "github.com/hegedustibor/htgo-tts"
 	"github.com/micmonay/keybd_event"
 	"github.com/muesli/streamdeck"
 	"github.com/sashabaranov/go-openai"
 	"golang.design/x/clipboard"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -28,6 +30,12 @@ type AiBot struct {
 	chatContent                        model.ChatContent
 	speech                             *htgotts.Speech
 	keyBonding                         *keybd_event.KeyBonding
+	assistantCompletionHistory         []openai.ChatCompletionMessage
+	responseListeners                  []func(*AiBot, string) error
+}
+
+func (bot *AiBot) AddResponseListener(listener func(*AiBot, string) error) {
+	bot.responseListeners = append(bot.responseListeners, listener)
 }
 
 func (bot *AiBot) init() {
@@ -55,7 +63,7 @@ func (bot *AiBot) init() {
 						fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
 						return nil
 					}
-					EvaluateAssistantGptResponseStrings([]string{transcription}, false, bot.chatContent, bot.OpenaiClient, bot.speech)
+					bot.EvaluateAssistantGptResponse([]string{transcription}, false, bot.chatContent, bot.OpenaiClient)
 				}
 				return nil
 			},
@@ -85,7 +93,7 @@ func (bot *AiBot) init() {
 						fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
 						return nil
 					}
-					EvaluateAssistantGptResponseStrings([]string{transcription}, true, bot.chatContent, bot.OpenaiClient, bot.speech)
+					bot.EvaluateAssistantGptResponse([]string{transcription}, true, bot.chatContent, bot.OpenaiClient)
 				}
 				return nil
 			},
@@ -145,18 +153,44 @@ func (bot *AiBot) init() {
 					}
 					return nil
 				}
-
-				EvaluateAssistantGptResponseStrings([]string{transcription}, true, bot.chatContent, bot.OpenaiClient, bot.speech)
-
+				bot.EvaluateAssistantGptResponse([]string{transcription}, true, bot.chatContent, bot.OpenaiClient)
 				return nil
 			})
 	}
 }
 
+func (bot *AiBot) EvaluateAssistantGptResponse(input []string, withHistory bool, chatContent model.ChatContent, client *openai.Client) error {
+	joinedRequestMessage := strings.Join(input, "\n")
+	if withHistory {
+		chatContent.HistoryMessages = bot.assistantCompletionHistory
+	} else {
+		bot.assistantCompletionHistory = []openai.ChatCompletionMessage{}
+	}
+	answer, err := utils.SendChatRequest(joinedRequestMessage, chatContent, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	bot.assistantCompletionHistory = append(bot.assistantCompletionHistory, openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleUser,
+		Content: joinedRequestMessage,
+	})
+	bot.assistantCompletionHistory = append(bot.assistantCompletionHistory, openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleAssistant,
+		Content: answer,
+	})
+	result := markdown.Render(answer, 80, 6)
+	fmt.Println(string(result))
+
+	for _, responseListener := range bot.responseListeners {
+		responseListener(bot, answer)
+	}
+	return nil
+}
+
 func (bot *AiBot) EvaluateGptResponseStringsWithHistory(requestLines []string) error {
-	return EvaluateAssistantGptResponseStrings(requestLines, true, bot.chatContent, bot.OpenaiClient, bot.speech)
+	return bot.EvaluateAssistantGptResponse(requestLines, true, bot.chatContent, bot.OpenaiClient)
 }
 
 func (bot *AiBot) EvaluateGptResponseStrings(requestLines []string) error {
-	return EvaluateAssistantGptResponseStrings(requestLines, false, bot.chatContent, bot.OpenaiClient, bot.speech)
+	return bot.EvaluateAssistantGptResponse(requestLines, false, bot.chatContent, bot.OpenaiClient)
 }

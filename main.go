@@ -312,9 +312,12 @@ func main() {
 
 	botFactory := bots.NewBotFactory(streamdeckHandler, client, device, &kb)
 
-	commanderChatContent := bots.InitCommanderGPTBot(client, device, properties, streamdeckHandler, scanner, 0, 5)
+	//commanderChatContent := bots.InitCommanderGPTBot(client, device, properties, streamdeckHandler, scanner, 0, 5)
 	//assistantBot := botFactory.CreateBot("Assistant", properties["assistantSystemMsg"], properties["assistantPromptMsg"], 1, 6, voices.German)
 	assistantBot := botFactory.CreateBotWithHistoryAndCopy("Assistant", properties["assistantSystemMsg"], properties["assistantPromptMsg"], 1, 6, 11, voices.German)
+	assistantBot.AddResponseListener(bots.SpeakResultFunc)
+	commanderBot := botFactory.CreateBotWithHistoryAndCopy("Commander", properties["commanderSystemMsg"], properties["commanderPromptMsg"], 0, 5, 10, voices.German)
+	commanderBot.AddResponseListener(bots.ExecuteCommandResultFunc)
 
 	//assistantChatContent := bots.InitAssistantGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 1, 6, 11)
 	bots.InitWhisperBot(streamdeckHandler, device, &kb, client, 2)
@@ -410,9 +413,9 @@ func main() {
 		} else if strings.HasPrefix(input[0], "ah:") {
 			assistantBot.EvaluateGptResponseStringsWithHistory(input)
 		} else if strings.HasPrefix(input[0], "h:") {
-			bots.EvaluateCommanderGptResponseStrings(input, true, scanner, *commanderChatContent, client)
+			commanderBot.EvaluateGptResponseStringsWithHistory(input)
 		} else {
-			bots.EvaluateCommanderGptResponseStrings(input, false, scanner, *commanderChatContent, client)
+			commanderBot.EvaluateGptResponseStrings(input)
 		}
 	}
 }
