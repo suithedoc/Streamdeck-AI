@@ -2,7 +2,6 @@ package bots
 
 import (
 	"OpenAITest/model"
-	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"context"
 	"fmt"
@@ -62,7 +61,7 @@ func InitAssistantGPTBot(client *openai.Client, device *streamdeck.Device, prope
 	}
 
 	if buttonWithoutHistory >= 0 {
-		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithoutHistory), "Assistant")
+		err := streamdeckHandler.AddButtonText(int(buttonWithoutHistory), "Assistant")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -93,7 +92,7 @@ func InitAssistantGPTBot(client *openai.Client, device *streamdeck.Device, prope
 	}
 
 	if buttonWithHistory >= 0 {
-		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithHistory), "HAssistant")
+		err := streamdeckHandler.AddButtonText(int(buttonWithHistory), "HAssistant")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -124,7 +123,7 @@ func InitAssistantGPTBot(client *openai.Client, device *streamdeck.Device, prope
 	}
 
 	if buttonWithHistoryAndCopy >= 0 {
-		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithHistoryAndCopy), "HPAssistant")
+		err := streamdeckHandler.AddButtonText(int(buttonWithHistoryAndCopy), "HPAssistant")
 		if err != nil {
 			log.Fatal(err)
 		}

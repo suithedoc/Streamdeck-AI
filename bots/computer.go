@@ -2,7 +2,6 @@ package bots
 
 import (
 	"OpenAITest/model"
-	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -57,7 +56,7 @@ func InitComputerGPTBot(client *openai.Client, device *streamdeck.Device, proper
 	}
 
 	if buttonWithoutHistory >= 0 {
-		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithoutHistory), "Computer")
+		err := streamdeckHandler.AddButtonText(int(buttonWithoutHistory), "Computer")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -88,7 +87,7 @@ func InitComputerGPTBot(client *openai.Client, device *streamdeck.Device, proper
 	}
 
 	if buttonWithHistory >= 0 {
-		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithHistory), "HComputer")
+		err := streamdeckHandler.AddButtonText(int(buttonWithHistory), "HComputer")
 		if err != nil {
 			log.Fatal(err)
 		}

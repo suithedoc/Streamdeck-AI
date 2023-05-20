@@ -2,7 +2,6 @@ package bots
 
 import (
 	"OpenAITest/model"
-	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -68,7 +67,7 @@ func InitCodeGPTBot(client *openai.Client, device *streamdeck.Device, properties
 		PromptMsg: properties["codePromptMsg"],
 	}
 
-	err := sd.SetStreamdeckButtonText(device, button, "Code")
+	err := streamdeckHandler.AddButtonText(int(button), "Code")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -2,7 +2,6 @@ package bots
 
 import (
 	"OpenAITest/model"
-	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"context"
 	"fmt"
@@ -40,7 +39,7 @@ func (bot *AiBot) AddResponseListener(listener func(*AiBot, string) error) {
 
 func (bot *AiBot) init() {
 	if bot.StreamDeckButton >= 0 {
-		err := sd.SetStreamdeckButtonText(bot.StreamdeckDevice, uint8(bot.StreamDeckButton), bot.Name)
+		err := bot.streamdeckHandler.AddButtonText(bot.StreamDeckButton, bot.Name)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -70,7 +69,7 @@ func (bot *AiBot) init() {
 		)
 	}
 	if bot.StreamDeckButtonWithHistory >= 0 {
-		err := sd.SetStreamdeckButtonText(bot.StreamdeckDevice, uint8(bot.StreamDeckButtonWithHistory), "HAssistant")
+		err := bot.streamdeckHandler.AddButtonText(bot.StreamDeckButtonWithHistory, "H"+bot.Name)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -101,7 +100,7 @@ func (bot *AiBot) init() {
 	}
 
 	if bot.StreamDeckButtonWithHistoryAndCopy >= 0 {
-		err := sd.SetStreamdeckButtonText(bot.StreamdeckDevice, uint8(bot.StreamDeckButtonWithHistoryAndCopy), "HPAssistant")
+		err := bot.streamdeckHandler.AddButtonText(bot.StreamDeckButtonWithHistoryAndCopy, "HP"+bot.Name)
 		if err != nil {
 			log.Fatal(err)
 		}

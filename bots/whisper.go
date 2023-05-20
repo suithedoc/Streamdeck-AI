@@ -2,7 +2,6 @@ package bots
 
 import (
 	"OpenAITest/model"
-	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"fmt"
 	"github.com/micmonay/keybd_event"
@@ -38,10 +37,11 @@ func TypeWhisperSTT(transcription string, kb *keybd_event.KeyBonding) error {
 }
 
 func InitWhisperBot(streamdeckHandler *model.StreamdeckHandler, device *streamdeck.Device, kb *keybd_event.KeyBonding, client *openai.Client, button uint8) {
-	err := sd.SetStreamdeckButtonText(device, button, "Whisper")
+	err := streamdeckHandler.AddButtonText(int(button), "Whisper")
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	streamdeckHandler.AddOnPressHandler(int(button), func() error {
 		go func() {
 			isRecording = true

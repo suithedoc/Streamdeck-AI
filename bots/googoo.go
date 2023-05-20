@@ -2,7 +2,6 @@ package bots
 
 import (
 	"OpenAITest/model"
-	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"bufio"
 	"fmt"
@@ -99,7 +98,7 @@ func InitGoogooGPTBot(client *openai.Client, device *streamdeck.Device, properti
 	}
 
 	if buttonWithoutHistory >= 0 {
-		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithoutHistory), "Googoo")
+		err := streamdeckHandler.AddButtonText(int(buttonWithoutHistory), "Googoo")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -129,7 +128,7 @@ func InitGoogooGPTBot(client *openai.Client, device *streamdeck.Device, properti
 	}
 
 	if buttonWithHistory >= 0 {
-		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithHistory), "HGoogoo")
+		err := streamdeckHandler.AddButtonText(int(buttonWithHistory), "HGoogoo")
 		if err != nil {
 			log.Fatal(err)
 		}

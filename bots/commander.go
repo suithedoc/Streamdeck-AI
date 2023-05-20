@@ -2,7 +2,6 @@ package bots
 
 import (
 	"OpenAITest/model"
-	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"bufio"
 	"fmt"
@@ -95,7 +94,7 @@ func InitCommanderGPTBot(client *openai.Client, device *streamdeck.Device, prope
 	}
 
 	if buttonWithoutHistory >= 0 {
-		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithoutHistory), "Commander")
+		err := streamdeckHandler.AddButtonText(int(buttonWithoutHistory), "Commander")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -125,7 +124,7 @@ func InitCommanderGPTBot(client *openai.Client, device *streamdeck.Device, prope
 	}
 
 	if buttonWithHistory >= 0 {
-		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithHistory), "HCommander")
+		err := streamdeckHandler.AddButtonText(int(buttonWithHistory), "HCommander")
 		if err != nil {
 			log.Fatal(err)
 		}

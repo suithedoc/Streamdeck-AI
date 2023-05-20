@@ -320,9 +320,9 @@ func main() {
 
 	botFactory := bots.NewBotFactory(streamdeckHandler, client, device, &kb)
 
-	assistantBot := botFactory.CreateBotWithHistoryAndCopy("Assistant", properties["assistantSystemMsg"], properties["assistantPromptMsg"], 1, 6, 11, voices.German)
+	assistantBot := botFactory.CreateBotWithHistoryAndCopy("Assistant", properties["assistantSystemMsg"], properties["assistantPromptMsg"], 3, 4, 5, voices.German)
 	assistantBot.AddResponseListener(bots.SpeakResultFunc)
-	commanderBot := botFactory.CreateBotWithHistoryAndCopy("Commander", properties["commanderSystemMsg"], properties["commanderPromptMsg"], 0, 5, 10, voices.German)
+	commanderBot := botFactory.CreateBotWithHistoryAndCopy("Commander", properties["commanderSystemMsg"], properties["commanderPromptMsg"], 0, 1, 2, voices.German)
 	commanderBot.AddResponseListener(bots.ExecuteCommandResultFunc)
 
 	labelBot := botFactory.CreateBotWithHistory("Label",
@@ -331,7 +331,7 @@ func main() {
 			"If the request contains a development question, respond with 'code'."+
 			"If the request could be resolved by a linux command, respond with 'linux'.",
 		"",
-		2, 7, voices.German)
+		6, 7, voices.German)
 	labelBot.AddResponseListener(func(bot *bots.AiBot, s string) error {
 
 		fmt.Printf("Label: %s\n", s)
@@ -350,8 +350,8 @@ func main() {
 	})
 
 	//bots.InitWhisperBot(streamdeckHandler, device, &kb, client, 2)
-	bots.InitMinecraftGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 3)
-	bots.InitCodeGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 4)
+	bots.InitMinecraftGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 9)
+	bots.InitCodeGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 10)
 
 	//err = InitWakeWordCommander(properties, commanderChatContent, &kb, client)
 	//if err != nil {

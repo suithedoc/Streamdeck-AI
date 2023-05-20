@@ -2,7 +2,6 @@ package bots
 
 import (
 	"OpenAITest/model"
-	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -114,8 +113,7 @@ func InitMinecraftGPTBot(client *openai.Client, device *streamdeck.Device, prope
 		SystemMsg: minecraftSystemMsg,
 		PromptMsg: minecraftPromptMsg,
 	}
-
-	err := sd.SetStreamdeckButtonText(device, button, "Minecraft")
+	err := streamdeckHandler.AddButtonText(int(button), "Minecraft")
 	if err != nil {
 		log.Fatal(err)
 	}
