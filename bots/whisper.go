@@ -1,12 +1,10 @@
 package bots
 
 import (
-	"OpenAITest/model"
 	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"fmt"
 	"github.com/micmonay/keybd_event"
-	"github.com/muesli/streamdeck"
 	"github.com/sashabaranov/go-openai"
 	"golang.design/x/clipboard"
 	"log"
@@ -37,7 +35,7 @@ func TypeWhisperSTT(transcription string, kb *keybd_event.KeyBonding) error {
 	return nil
 }
 
-func InitWhisperBot(streamdeckHandler *model.StreamdeckHandler, device *streamdeck.Device, kb *keybd_event.KeyBonding, client *openai.Client, button uint8) {
+func InitWhisperBot(streamdeckHandler sd.IStreamdeckHandler, device sd.DeviceWrapper, kb *keybd_event.KeyBonding, client *openai.Client, button uint8) {
 	err := sd.SetStreamdeckButtonText(device, button, "Whisper")
 	if err != nil {
 		log.Fatal(err)

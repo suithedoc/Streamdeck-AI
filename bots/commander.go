@@ -7,7 +7,6 @@ import (
 	"bufio"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/muesli/streamdeck"
 	"github.com/sashabaranov/go-openai"
 	"log"
 	"strings"
@@ -83,8 +82,8 @@ func EvaluateCommanderGptResponseStrings(input []string, withHistory bool, scann
 	}
 }
 
-func InitCommanderGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
-	streamdeckHandler *model.StreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
+func InitCommanderGPTBot(client *openai.Client, device sd.DeviceWrapper, properties map[string]string,
+	streamdeckHandler sd.IStreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
 
 	commanderSystemMsg := properties["commanderSystemMsg"]
 	commanderPromptMsg := properties["commanderPromptMsg"]

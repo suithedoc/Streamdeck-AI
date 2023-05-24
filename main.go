@@ -12,10 +12,9 @@ import (
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/charmbracelet/lipgloss"
 	fcolor "github.com/fatih/color"
-	"github.com/hegedustibor/htgo-tts"
+	htgotts "github.com/hegedustibor/htgo-tts"
 	"github.com/hegedustibor/htgo-tts/handlers"
 	"github.com/hegedustibor/htgo-tts/voices"
-	"github.com/muesli/streamdeck"
 	openai "github.com/sashabaranov/go-openai"
 	"github.com/tinyzimmer/go-gst/gst"
 	"go.mau.fi/whatsmeow/types/events"
@@ -48,13 +47,12 @@ type EchoWithColor struct {
 
 var (
 	echoWithColorQueue chan EchoWithColor
-	streamdeckHandler  *model.StreamdeckHandler
+	streamdeckHandler  sd.IStreamdeckHandler
 	kb                 keybd_event.KeyBonding
 )
 
 func init() {
 	echoWithColorQueue = make(chan EchoWithColor, 100)
-	streamdeckHandler = model.NewStreamdeckHandler()
 	utils.OpenaiModel = "gpt3.5"
 }
 
@@ -80,47 +78,47 @@ func AsyncConsoleOutput() {
 	}()
 }
 
-func StartListenStreamDeckAsync(device *streamdeck.Device) error {
-
-	go func() {
-		keys, err := device.ReadKeys()
-		if err != nil {
-			log.Fatal(err)
-		}
-		for {
-			select {
-			case key := <-keys:
-				fmt.Printf("Key pressed index %v, is pressed %v\n", key.Index, key.Pressed)
-				if key.Pressed {
-					if handler, ok := streamdeckHandler.GetOnPressHandler(int(key.Index)); ok {
-						err := handler()
-						if err != nil {
-							log.Fatal(err)
-						}
-					}
-				} else {
-					if handler, ok := streamdeckHandler.GetOnReleaseHandler(int(key.Index)); ok {
-						err := handler()
-						if err != nil {
-							log.Fatal(err)
-						}
-					}
-				}
-			}
-		}
-	}()
-
-	/*
-		ver, err := d.FirmwareVersion()
-		if err != nil {
-			return fmt.Errorf("can't retrieve device info: %s", err)
-		}
-		fmt.Printf("Found device with serial %s (firmware %s)\n",
-			d.Serial, ver)Hello, how are zou_ Hallo, wie geht es dir_ mir geht das eigentlich gany gut
-	*/
-
-	return nil
-}
+//func StartListenStreamDeckAsync(device sd.DeviceWrapper) error {
+//
+//	go func() {
+//		keys, err := device.ReadKeys()
+//		if err != nil {
+//			log.Fatal(err)
+//		}
+//		for {
+//			select {
+//			case key := <-keys:
+//				fmt.Printf("Key pressed index %v, is pressed %v\n", key.Index, key.Pressed)
+//				if key.Pressed {
+//					if handler, ok := streamdeckHandler.GetOnPressHandler(int(key.Index)); ok {
+//						err := handler()
+//						if err != nil {
+//							log.Fatal(err)
+//						}
+//					}
+//				} else {
+//					if handler, ok := streamdeckHandler.GetOnReleaseHandler(int(key.Index)); ok {
+//						err := handler()
+//						if err != nil {
+//							log.Fatal(err)
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}()
+//
+//	/*
+//		ver, err := d.FirmwareVersion()
+//		if err != nil {
+//			return fmt.Errorf("can't retrieve device info: %s", err)
+//		}
+//		fmt.Printf("Found device with serial %s (firmware %s)\n",
+//			d.Serial, ver)Hello, how are zou_ Hallo, wie geht es dir_ mir geht das eigentlich gany gut
+//	*/
+//
+//	return nil
+//}
 
 func fetch(text string) (io.Reader, error) {
 	data := []byte(text)
@@ -255,15 +253,20 @@ func main() {
 	quitChannel := make(chan bool)
 	finished := make(chan bool)
 	isRecording := false
-	device, err := sd.InitStreamdeckDevice()
-	if err != nil {
-		log.Fatal(err)
+	//device, err := sd.InitStreamdeckDevice()
+	streamdeckHandler, err = sd.NewStreamdeckHandler()
+	if err != nil || streamdeckHandler == nil {
+		streamdeckHandler, err = sd.NewUiStreamdeckHandler()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+	device := streamdeckHandler.GetDevice()
 	err = device.Clear()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func(device *streamdeck.Device) {
+	defer func(device sd.DeviceWrapper) {
 		err := device.Close()
 		if err != nil {
 			log.Fatal(err)
@@ -319,7 +322,8 @@ func main() {
 	//}
 
 	//evaluators.InitGoogooGPTBot(client, device, properties, streamdeckHandler, scanner, 10, 11)
-	err = StartListenStreamDeckAsync(device)
+	//err = StartListenStreamDeckAsync(device)
+	err = streamdeckHandler.StartListenAsync()
 	if err != nil {
 		println(err.Error())
 	}

@@ -105,7 +105,7 @@ func NewLayout(size int) *Layout {
 	}
 }
 
-func InitStreamdeckDevice() (*streamdeck.Device, error) {
+func InitStreamdeckDevice() (*StreamdeckDeviceWrapper, error) {
 	devs, err := streamdeck.Devices()
 	if err != nil {
 		return nil, fmt.Errorf("no Stream Deck devices found: %s", err)
@@ -117,10 +117,10 @@ func InitStreamdeckDevice() (*streamdeck.Device, error) {
 	if err := d.Open(); err != nil {
 		return nil, fmt.Errorf("can't open device: %s", err)
 	}
-	return &d, nil
+	return NewStreamdeckDeviceWrapper(&d), nil
 }
 
-func SetStreamdeckButtonText(device *streamdeck.Device, index uint8, text string) error {
+func SetStreamdeckButtonText(device DeviceWrapper, index uint8, text string) error {
 	img, err := CreateTextImage(device, text)
 	if err != nil {
 		return err
@@ -128,8 +128,8 @@ func SetStreamdeckButtonText(device *streamdeck.Device, index uint8, text string
 	return device.SetImage(index, img)
 }
 
-func CreateTextImage(device *streamdeck.Device, text string) (image.Image, error) {
-	size := int(device.Pixels)
+func CreateTextImage(device DeviceWrapper, text string) (image.Image, error) {
+	size := int(device.GetPixels())
 	img := image.NewRGBA(image.Rect(0, 0, size, size))
 
 	ttfFont, err := LoadFont("Vera.ttf")
@@ -140,7 +140,7 @@ func CreateTextImage(device *streamdeck.Device, text string) (image.Image, error
 		image.Rect(0, 0, size, size),
 		ttfFont,
 		text,
-		device.DPI,
+		device.DPI(),
 		-1,
 		color.RGBA{255, 255, 255, 255},
 		image.Pt(-1, -1))

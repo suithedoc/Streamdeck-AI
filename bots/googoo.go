@@ -7,7 +7,6 @@ import (
 	"bufio"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/muesli/streamdeck"
 	"github.com/sashabaranov/go-openai"
 	"log"
 	"strings"
@@ -87,8 +86,8 @@ func EvaluateGoogooGptResponseStrings(input []string, withHistory bool, scanner 
 	}
 }
 
-func InitGoogooGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
-	streamdeckHandler *model.StreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
+func InitGoogooGPTBot(client *openai.Client, device sd.DeviceWrapper, properties map[string]string,
+	streamdeckHandler *sd.StreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
 
 	googooSystemMsg := properties["googooSystemMsg"]
 	googooPromptMsg := properties["googooPromptMsg"]

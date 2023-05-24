@@ -9,7 +9,6 @@ import (
 	markdown "github.com/MichaelMure/go-term-markdown"
 	htgotts "github.com/hegedustibor/htgo-tts"
 	"github.com/micmonay/keybd_event"
-	"github.com/muesli/streamdeck"
 	"github.com/sashabaranov/go-openai"
 	"golang.design/x/clipboard"
 	"log"
@@ -51,8 +50,8 @@ func EvaluateAssistantGptResponseStrings(input []string, withHistory bool, chatC
 	return nil
 }
 
-func InitAssistantGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
-	streamdeckHandler *model.StreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding,
+func InitAssistantGPTBot(client *openai.Client, device sd.DeviceWrapper, properties map[string]string,
+	streamdeckHandler sd.IStreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding,
 	buttonWithoutHistory int16, buttonWithHistory int16, buttonWithHistoryAndCopy int16) *model.ChatContent {
 	assistantCompletionHistory = []openai.ChatCompletionMessage{}
 	assistantChatContent := model.ChatContent{

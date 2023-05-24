@@ -7,7 +7,6 @@ import (
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
 	htgotts "github.com/hegedustibor/htgo-tts"
-	"github.com/muesli/streamdeck"
 	"github.com/sashabaranov/go-openai"
 	"log"
 	"strings"
@@ -47,8 +46,8 @@ func EvaluateComputerGptResponseStrings(input []string, withHistory bool, chatCo
 	return nil
 }
 
-func InitComputerGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
-	streamdeckHandler *model.StreamdeckHandler, speech *htgotts.Speech, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
+func InitComputerGPTBot(client *openai.Client, device sd.DeviceWrapper, properties map[string]string,
+	streamdeckHandler *sd.StreamdeckHandler, speech *htgotts.Speech, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
 	computerCompletionHistory = []openai.ChatCompletionMessage{}
 	computerChatContent := model.ChatContent{
 		SystemMsg:       properties["computerSystemMsg"],
