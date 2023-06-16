@@ -14,6 +14,7 @@ import (
 	waLog "go.mau.fi/whatsmeow/util/log"
 	"google.golang.org/protobuf/proto"
 	"log"
+	"mime"
 	"os"
 	"os/signal"
 	"strings"
@@ -45,6 +46,58 @@ func StartWhatsappBot(chatContent model.ChatContent, userNumber string, userName
 	whatsappClient.AddEventHandler(func(evt interface{}) {
 		switch v := evt.(type) {
 		case *events.Message:
+			audio := v.Message.GetAudioMessage()
+			if audio != nil {
+				data, err := whatsappClient.Download(audio)
+				if err != nil {
+					log.Println("download audiofile: ", err)
+					return
+				}
+				exts, _ := mime.ExtensionsByType(audio.GetMimetype())
+				// Create Directory if not exists
+				err = os.MkdirAll("./Downloads/Audio", 0700)
+				pathOga := fmt.Sprintf("./Downloads/Audio/%s-%s%s", v.Info.Sender.User, v.Info.ID, exts[0])
+				pathMp3 := fmt.Sprintf("./Downloads/Audio/%s-%s%s", v.Info.Sender.User, v.Info.ID, ".mp3")
+				err = os.WriteFile(pathOga, data, 0600)
+				if err != nil {
+					log.Printf("write audiofile: %v", err)
+					return
+				}
+				log.Printf("audiofile saved to %s", pathOga)
+
+				err = utils.ConvertOGAtoMP3(pathOga, pathMp3)
+				if err != nil {
+					log.Printf("ConvertOGAtoMP3 audiofile: %v", err)
+					return
+				}
+
+				text, err := utils.ParseMp3ToText(pathMp3, client)
+				if err != nil {
+					log.Printf("parse audiofile: %v", err)
+					return
+				}
+				log.Printf("audiofile parsed to text: %s", text)
+
+				//_, err = whatsappClient.SendMessage(context.Background(), v.Info.Sender.ToNonAD(), &waProto.Message{
+				//
+				//	Conversation: proto.String(text),
+				//})
+
+				_, err = whatsappClient.SendMessage(context.Background(), v.Info.Sender.ToNonAD(), &waProto.Message{
+					ExtendedTextMessage: &waProto.ExtendedTextMessage{
+						Text: proto.String(text),
+						ContextInfo: &waProto.ContextInfo{
+							StanzaId:      proto.String(v.Info.ID),
+							Participant:   proto.String(v.Info.Sender.String()),
+							QuotedMessage: v.Message,
+						},
+					},
+				})
+				if err != nil {
+					fmt.Println("Error seding message: " + err.Error())
+				}
+
+			}
 			fmt.Println("Received message from: " + v.Info.PushName)
 
 			if userNumber == "" && userName == "" {

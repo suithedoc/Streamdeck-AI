@@ -37,6 +37,43 @@ func ParseMp3ToText(mp3FileName string, client *openai.Client) (string, error) {
 //	CaptureStopped bool
 //}
 
+func ConvertOGAtoMP3(ogaFile string, mp3File string) error {
+	// Set up the GStreamer pipeline string
+	pipelineStr := "filesrc location=" + ogaFile + " ! decodebin !	 audioconvert ! audioresample ! lamemp3enc ! filesink location=" + mp3File
+	// Create a new pipeline object
+	pipeline, err := gst.NewPipelineFromString(pipelineStr)
+	if err != nil {
+		return err
+	}
+	defer pipeline.SetState(gst.StateNull)
+
+	// Start the pipeline
+	err = pipeline.Start()
+	if err != nil {
+		log.Printf("starting pipeline: %s\n", err)
+		return err
+	}
+
+	bus := pipeline.GetBus()
+
+	for {
+		msg := bus.TimedPop(3 * time.Second)
+		if msg == nil {
+			continue
+		}
+		switch msg.Type() {
+		case gst.MessageEOS:
+			log.Println("Got EOS")
+			return nil
+		case gst.MessageError:
+			log.Println("Got Error")
+			return nil
+		}
+	}
+
+	return nil
+}
+
 func RecordAndSaveAudioAsMp3(mp3FileName string, quit chan bool, finished chan bool) {
 	pielineString := "autoaudiosrc ! audioconvert ! audioresample ! audio/x-raw,rate=16000,channels=1,format=S16LE ! wavenc ! filesink location=" + mp3FileName
 	pipeline, err := gst.NewPipelineFromString(pielineString)
