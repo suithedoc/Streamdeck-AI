@@ -7,7 +7,6 @@ require (
 	github.com/MichaelMure/go-term-markdown v0.1.4
 	github.com/Picovoice/porcupine/binding/go/v2 v2.2.0
 	github.com/Picovoice/pvrecorder/sdk/go v1.1.1
-	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/fatih/color v1.9.0
 	github.com/flopp/go-findfont v0.1.0
@@ -18,7 +17,6 @@ require (
 	github.com/micmonay/keybd_event v1.1.1
 	github.com/muesli/streamdeck v0.4.0
 	github.com/sashabaranov/go-openai v1.5.7
-	github.com/serpapi/google-search-results-golang v0.0.0-20230501055731-fa34e87cb7f5
 	github.com/tinyzimmer/go-gst v0.2.33
 	go.mau.fi/whatsmeow v0.0.0-20230324171918-c7e156dca788
 	golang.design/x/clipboard v0.7.0
@@ -31,7 +29,6 @@ require (
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/MichaelMure/go-term-text v0.3.1 // indirect
 	github.com/alecthomas/chroma v0.10.0 // indirect
-	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/eliukblau/pixterm/pkg/ansimage v0.0.0-20191210081756-9fb6cf8c2f75 // indirect
@@ -59,5 +56,6 @@ require (
 	rsc.io/qr v0.2.0 // indirect
 )
 
-//replace github.com/tinyzimmer/go-gst => github.com/livekit/go-gst v0.2.34-0.20230210170313-8fc9f59623d4
-replace github.com/tinyzimmer/go-gst => /home/dennis/GolandProjects/go-gst
+replace github.com/tinyzimmer/go-gst => github.com/db-tech/go-gst v0.0.0-20230703192810-282564803eda
+
+//replace github.com/tinyzimmer/go-gst => ../go-gst
