@@ -2,6 +2,7 @@ package bots
 
 import (
 	"OpenAITest/model"
+	streamdeck2 "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"bufio"
 	"fmt"
@@ -87,7 +88,7 @@ func EvaluateGoogooGptResponseStrings(input []string, withHistory bool, scanner 
 }
 
 func InitGoogooGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
-	streamdeckHandler *model.StreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
+	streamdeckHandler streamdeck2.IStreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
 
 	googooSystemMsg := properties["googooSystemMsg"]
 	googooPromptMsg := properties["googooPromptMsg"]

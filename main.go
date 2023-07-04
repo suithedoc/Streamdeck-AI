@@ -274,6 +274,9 @@ func main() {
 		}
 	}
 	device := streamdeckHandler.GetDevice()
+	if device == nil {
+		log.Fatal("No device found")
+	}
 	err = device.Clear()
 	if err != nil {
 		log.Fatal(err)

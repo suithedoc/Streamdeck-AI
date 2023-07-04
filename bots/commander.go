@@ -2,6 +2,7 @@ package bots
 
 import (
 	"OpenAITest/model"
+	streamdeck2 "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"bufio"
 	"fmt"
@@ -83,7 +84,7 @@ func EvaluateCommanderGptResponseStrings(input []string, withHistory bool, scann
 }
 
 func InitCommanderGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
-	streamdeckHandler *model.StreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
+	streamdeckHandler streamdeck2.IStreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
 
 	commanderSystemMsg := properties["commanderSystemMsg"]
 	commanderPromptMsg := properties["commanderPromptMsg"]

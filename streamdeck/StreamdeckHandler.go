@@ -3,6 +3,7 @@ package streamdeck
 import (
 	"fmt"
 	"log"
+	"strconv"
 )
 
 type StreamdeckHandler struct {
@@ -24,7 +25,43 @@ func NewStreamdeckHandler() (IStreamdeckHandler, error) {
 		streamDeckButtonIdToOnPressHandler:   make(map[int]func() error),
 		streamDeckButtonIdToOnReleaseHandler: make(map[int]func() error),
 		device:                               device,
+		page:                                 1,
+		buttonItToText:                       make(map[int]string),
+		numOfButtons:                         int(device.device.Rows * (device.device.Columns - 1)),
 	}, nil
+}
+
+func (sh *StreamdeckHandler) AddButtonText(buttonId int, text string) error {
+	sh.buttonItToText[sh.TraverseButtonId(buttonId)] = text
+	return nil
+}
+
+func (sh *StreamdeckHandler) SwitchPage(page int) {
+	sh.device.Clear()
+	sh.page = page
+	err := SetStreamdeckButtonText(sh.device, sh.device.device.Columns-1, ">")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = SetStreamdeckButtonText(sh.device, sh.device.device.Columns*2-1, strconv.Itoa(sh.page))
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = SetStreamdeckButtonText(sh.device, sh.device.device.Columns*3-1, "<")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for buttonId, text := range sh.buttonItToText {
+		reverseButtonId := sh.ReverseTraverseButtonId(buttonId)
+		buttonIdPerPage := reverseButtonId - (sh.page-1)*sh.numOfButtons
+		if reverseButtonId >= 0 && buttonIdPerPage < sh.numOfButtons {
+			//newId := sh.TraverseButtonId(buttonIdPerPage)
+			err := SetStreamdeckButtonText(sh.device, uint8(sh.TraverseButtonId(buttonIdPerPage)), text)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
 }
 
 func (sh *StreamdeckHandler) AddOnPressHandler(buttonId int, handler func() error) {

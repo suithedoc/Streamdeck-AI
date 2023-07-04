@@ -39,6 +39,9 @@ func (bot *AiBot) AddResponseListener(listener func(*AiBot, string) error) {
 
 func (bot *AiBot) init() {
 	if bot.StreamDeckButton >= 0 {
+		if bot.streamdeckHandler == nil {
+			log.Fatal("Streamdeck handler not set")
+		}
 		err := bot.streamdeckHandler.AddButtonText(bot.StreamDeckButton, bot.Name)
 		if err != nil {
 			log.Fatal(err)

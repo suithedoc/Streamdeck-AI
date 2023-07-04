@@ -2,6 +2,7 @@ package bots
 
 import (
 	"OpenAITest/model"
+	streamdeck2 "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"context"
 	"fmt"
@@ -51,7 +52,7 @@ func EvaluateAssistantGptResponseStrings(input []string, withHistory bool, chatC
 }
 
 func InitAssistantGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
-	streamdeckHandler *model.StreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding,
+	streamdeckHandler streamdeck2.IStreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding,
 	buttonWithoutHistory int16, buttonWithHistory int16, buttonWithHistoryAndCopy int16) *model.ChatContent {
 	assistantCompletionHistory = []openai.ChatCompletionMessage{}
 	assistantChatContent := model.ChatContent{

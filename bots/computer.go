@@ -2,6 +2,7 @@ package bots
 
 import (
 	"OpenAITest/model"
+	streamdeck2 "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -47,7 +48,7 @@ func EvaluateComputerGptResponseStrings(input []string, withHistory bool, chatCo
 }
 
 func InitComputerGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
-	streamdeckHandler *model.StreamdeckHandler, speech *htgotts.Speech, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
+	streamdeckHandler streamdeck2.IStreamdeckHandler, speech *htgotts.Speech, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
 	computerCompletionHistory = []openai.ChatCompletionMessage{}
 	computerChatContent := model.ChatContent{
 		SystemMsg:       properties["computerSystemMsg"],
