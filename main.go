@@ -17,7 +17,6 @@ import (
 	"github.com/hegedustibor/htgo-tts/voices"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/micmonay/keybd_event"
-	"github.com/muesli/streamdeck"
 	openai "github.com/sashabaranov/go-openai"
 	"github.com/tinyzimmer/go-gst/gst"
 	"go.mau.fi/whatsmeow/types/events"
@@ -47,7 +46,7 @@ type EchoWithColor struct {
 
 var (
 	echoWithColorQueue chan EchoWithColor
-	streamdeckHandler  *model.StreamdeckHandler
+	streamdeckHandler  sd.IStreamdeckHandler
 	kb                 keybd_event.KeyBonding
 )
 
@@ -263,23 +262,28 @@ func downloadUrlContent(url string) (string, error) {
 func main() {
 	var err error
 
-	device, err := sd.InitStreamdeckDevice()
-	if err != nil {
-		log.Fatal(err)
+	//device, err := sd.InitStreamdeckDevice()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	streamdeckHandler, err = sd.NewStreamdeckHandler()
+	if err != nil || streamdeckHandler == nil {
+		streamdeckHandler, err = sd.NewUiStreamdeckHandler()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+	device := streamdeckHandler.GetDevice()
 	err = device.Clear()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func(device *streamdeck.Device) {
+	defer func(device sd.DeviceWrapper) {
 		err := device.Close()
 		if err != nil {
 			log.Fatal(err)
 		}
 	}(device)
-
-	streamdeckHandler = model.NewStreamdeckHandler(device)
-
 	kb, err = keybd_event.NewKeyBonding()
 	if err != nil {
 		panic(err)
@@ -359,7 +363,10 @@ func main() {
 	//	os.Exit(1)
 	//}
 
-	streamdeckHandler.StartAsync()
+	err = streamdeckHandler.StartListenAsync()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	gst.Init(nil)
 	AsyncConsoleOutput()

@@ -2,23 +2,23 @@ package bots
 
 import (
 	"OpenAITest/model"
+	sd "OpenAITest/streamdeck"
 	htgotts "github.com/hegedustibor/htgo-tts"
 	"github.com/hegedustibor/htgo-tts/handlers"
 	"github.com/micmonay/keybd_event"
-	"github.com/muesli/streamdeck"
 	"github.com/sashabaranov/go-openai"
 )
 
 type BotFactory struct {
-	streamdeckHandler *model.StreamdeckHandler
+	streamdeckHandler sd.IStreamdeckHandler
 	OpenaiClient      *openai.Client
-	StreamdeckDevice  *streamdeck.Device
+	StreamdeckDevice  sd.DeviceWrapper
 	speeches          map[string]*htgotts.Speech
 	keyBonding        *keybd_event.KeyBonding
 }
 
-func NewBotFactory(streamdeckHandler *model.StreamdeckHandler,
-	openaiClient *openai.Client, streamdeckDevice *streamdeck.Device,
+func NewBotFactory(streamdeckHandler sd.IStreamdeckHandler,
+	openaiClient *openai.Client, streamdeckDevice sd.DeviceWrapper,
 	keyBonding *keybd_event.KeyBonding) *BotFactory {
 	return &BotFactory{
 		streamdeckHandler: streamdeckHandler,

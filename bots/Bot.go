@@ -2,13 +2,13 @@ package bots
 
 import (
 	"OpenAITest/model"
+	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"context"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
 	htgotts "github.com/hegedustibor/htgo-tts"
 	"github.com/micmonay/keybd_event"
-	"github.com/muesli/streamdeck"
 	"github.com/sashabaranov/go-openai"
 	"golang.design/x/clipboard"
 	"log"
@@ -20,11 +20,11 @@ type AiBot struct {
 	Name                               string
 	SystemMsg                          string
 	PromptMSg                          string
-	StreamdeckDevice                   *streamdeck.Device
+	StreamdeckDevice                   sd.DeviceWrapper
 	StreamDeckButton                   int // Set to -1 to disable
 	StreamDeckButtonWithHistory        int // Set to -1 to disable
 	StreamDeckButtonWithHistoryAndCopy int // Set to -1 to disable
-	streamdeckHandler                  *model.StreamdeckHandler
+	streamdeckHandler                  sd.IStreamdeckHandler
 	OpenaiClient                       *openai.Client
 	ChatContent                        model.ChatContent
 	speech                             *htgotts.Speech
