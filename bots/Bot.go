@@ -76,7 +76,7 @@ func (bot *AiBot) init() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		bot.streamdeckHandler.AddOnPressHandler(int(bot.StreamDeckButtonWithHistory), func() error {
+		bot.streamdeckHandler.AddOnPressHandler(bot.StreamDeckButtonWithHistory, func() error {
 			go func() {
 				isRecording = true
 				utils.RecordAndSaveAudioAsMp3(fmt.Sprintf("audio%vHist.wav", bot.Name), quitChannel, finished)
@@ -107,7 +107,7 @@ func (bot *AiBot) init() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		bot.streamdeckHandler.AddOnPressHandler(int(bot.StreamDeckButtonWithHistoryAndCopy), func() error {
+		bot.streamdeckHandler.AddOnPressHandler(bot.StreamDeckButtonWithHistoryAndCopy, func() error {
 			go func() {
 				isRecording = true
 				utils.RecordAndSaveAudioAsMp3(fmt.Sprintf("audio%vHistPaste.wav", bot.Name), quitChannel, finished)

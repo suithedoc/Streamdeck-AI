@@ -1,14 +1,9 @@
 package bots
 
 import (
-	streamdeck2 "OpenAITest/streamdeck"
-	"OpenAITest/utils"
 	"fmt"
 	"github.com/micmonay/keybd_event"
-	"github.com/muesli/streamdeck"
-	"github.com/sashabaranov/go-openai"
 	"golang.design/x/clipboard"
-	"log"
 	"time"
 )
 
@@ -36,35 +31,35 @@ func TypeWhisperSTT(transcription string, kb *keybd_event.KeyBonding) error {
 	return nil
 }
 
-func InitWhisperBot(streamdeckHandler streamdeck2.IStreamdeckHandler, device *streamdeck.Device, kb *keybd_event.KeyBonding, client *openai.Client, button uint8) {
-	err := streamdeckHandler.AddButtonText(int(button), "Whisper")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	streamdeckHandler.AddOnPressHandler(int(button), func() error {
-		go func() {
-			isRecording = true
-			utils.RecordAndSaveAudioAsMp3("copyPaste.wav", quitChannel, finished)
-		}()
-		return nil
-	})
-
-	streamdeckHandler.AddOnReleaseHandler(int(button), func() error {
-		if isRecording {
-			quitChannel <- true
-			<-finished
-			isRecording = false
-			transcription, err := utils.ParseMp3ToText("copyPaste.wav", client)
-			if err != nil {
-				fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
-				return nil
-			}
-			err = TypeWhisperSTT(transcription, kb)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
+//func InitWhisperBot(streamdeckHandler streamdeck2.IStreamdeckHandler, device *streamdeck.Device, kb *keybd_event.KeyBonding, client *openai.Client, button uint8) {
+//	err := streamdeckHandler.AddButtonText(int(button), "Whisper")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//
+//	streamdeckHandler.AddOnPressHandler(int(button), func() error {
+//		go func() {
+//			isRecording = true
+//			utils.RecordAndSaveAudioAsMp3("copyPaste.wav", quitChannel, finished)
+//		}()
+//		return nil
+//	})
+//
+//	streamdeckHandler.AddOnReleaseHandler(int(button), func() error {
+//		if isRecording {
+//			quitChannel <- true
+//			<-finished
+//			isRecording = false
+//			transcription, err := utils.ParseMp3ToText("copyPaste.wav", client)
+//			if err != nil {
+//				fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
+//				return nil
+//			}
+//			err = TypeWhisperSTT(transcription, kb)
+//			if err != nil {
+//				return err
+//			}
+//		}
+//		return nil
+//	})
+//}

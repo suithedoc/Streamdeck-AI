@@ -2,12 +2,10 @@ package bots
 
 import (
 	"OpenAITest/model"
-	streamdeck2 "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"bufio"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/muesli/streamdeck"
 	"github.com/sashabaranov/go-openai"
 	"log"
 	"strings"
@@ -87,75 +85,75 @@ func EvaluateGoogooGptResponseStrings(input []string, withHistory bool, scanner 
 	}
 }
 
-func InitGoogooGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
-	streamdeckHandler streamdeck2.IStreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
-
-	googooSystemMsg := properties["googooSystemMsg"]
-	googooPromptMsg := properties["googooPromptMsg"]
-	googooChatContent := model.ChatContent{
-		SystemMsg:       googooSystemMsg,
-		PromptMsg:       googooPromptMsg,
-		HistoryMessages: []openai.ChatCompletionMessage{},
-	}
-
-	if buttonWithoutHistory >= 0 {
-		err := streamdeckHandler.AddButtonText(int(buttonWithoutHistory), "Googoo")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		streamdeckHandler.AddOnPressHandler(int(buttonWithoutHistory), func() error {
-			go func() {
-				isRecording = true
-				utils.RecordAndSaveAudioAsMp3("Googoo.wav", quitChannel, finished)
-			}()
-			return nil
-		})
-
-		streamdeckHandler.AddOnReleaseHandler(int(buttonWithoutHistory), func() error {
-			if isRecording {
-				quitChannel <- true
-				<-finished
-				isRecording = false
-				transcription, err := utils.ParseMp3ToText("Googoo.wav", client)
-				if err != nil {
-					fmt.Printf("Error parsing mp3 to text: %s\n", err)
-					return nil
-				}
-				EvaluateGoogooGptResponseStrings([]string{transcription}, false, scanner, googooChatContent, client)
-			}
-			return nil
-		})
-	}
-
-	if buttonWithHistory >= 0 {
-		err := streamdeckHandler.AddButtonText(int(buttonWithHistory), "HGoogoo")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		streamdeckHandler.AddOnPressHandler(int(buttonWithHistory), func() error {
-			go func() {
-				isRecording = true
-				utils.RecordAndSaveAudioAsMp3("Googoo.wav", quitChannel, finished)
-			}()
-			return nil
-		})
-
-		streamdeckHandler.AddOnReleaseHandler(int(buttonWithHistory), func() error {
-			if isRecording {
-				quitChannel <- true
-				<-finished
-				isRecording = false
-				transcription, err := utils.ParseMp3ToText("Googoo.wav", client)
-				if err != nil {
-					fmt.Printf("Error parsing mp3 to text: %s\n", err)
-					return nil
-				}
-				EvaluateGoogooGptResponseStrings([]string{transcription}, true, scanner, googooChatContent, client)
-			}
-			return nil
-		})
-	}
-	return &googooChatContent
-}
+//func InitGoogooGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
+//	streamdeckHandler streamdeck2.IStreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
+//
+//	googooSystemMsg := properties["googooSystemMsg"]
+//	googooPromptMsg := properties["googooPromptMsg"]
+//	googooChatContent := model.ChatContent{
+//		SystemMsg:       googooSystemMsg,
+//		PromptMsg:       googooPromptMsg,
+//		HistoryMessages: []openai.ChatCompletionMessage{},
+//	}
+//
+//	if buttonWithoutHistory >= 0 {
+//		err := streamdeckHandler.AddButtonText(int(buttonWithoutHistory), "Googoo")
+//		if err != nil {
+//			log.Fatal(err)
+//		}
+//
+//		streamdeckHandler.AddOnPressHandler(int(buttonWithoutHistory), func() error {
+//			go func() {
+//				isRecording = true
+//				utils.RecordAndSaveAudioAsMp3("Googoo.wav", quitChannel, finished)
+//			}()
+//			return nil
+//		})
+//
+//		streamdeckHandler.AddOnReleaseHandler(int(buttonWithoutHistory), func() error {
+//			if isRecording {
+//				quitChannel <- true
+//				<-finished
+//				isRecording = false
+//				transcription, err := utils.ParseMp3ToText("Googoo.wav", client)
+//				if err != nil {
+//					fmt.Printf("Error parsing mp3 to text: %s\n", err)
+//					return nil
+//				}
+//				EvaluateGoogooGptResponseStrings([]string{transcription}, false, scanner, googooChatContent, client)
+//			}
+//			return nil
+//		})
+//	}
+//
+//	if buttonWithHistory >= 0 {
+//		err := streamdeckHandler.AddButtonText(int(buttonWithHistory), "HGoogoo")
+//		if err != nil {
+//			log.Fatal(err)
+//		}
+//
+//		streamdeckHandler.AddOnPressHandler(int(buttonWithHistory), func() error {
+//			go func() {
+//				isRecording = true
+//				utils.RecordAndSaveAudioAsMp3("Googoo.wav", quitChannel, finished)
+//			}()
+//			return nil
+//		})
+//
+//		streamdeckHandler.AddOnReleaseHandler(int(buttonWithHistory), func() error {
+//			if isRecording {
+//				quitChannel <- true
+//				<-finished
+//				isRecording = false
+//				transcription, err := utils.ParseMp3ToText("Googoo.wav", client)
+//				if err != nil {
+//					fmt.Printf("Error parsing mp3 to text: %s\n", err)
+//					return nil
+//				}
+//				EvaluateGoogooGptResponseStrings([]string{transcription}, true, scanner, googooChatContent, client)
+//			}
+//			return nil
+//		})
+//	}
+//	return &googooChatContent
+//}

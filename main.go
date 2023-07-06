@@ -328,6 +328,10 @@ func main() {
 	botFactory := bots.NewBotFactory(streamdeckHandler, client, device, &kb)
 
 	assistantBot := botFactory.CreateBotWithHistoryAndCopy("Assistant", properties["assistantSystemMsg"], properties["assistantPromptMsg"], 3, 4, 5, voices.German)
+	assistantBot.AddResponseListener(func(bot *bots.AiBot, s string) error {
+		fmt.Printf("Assistant: %s\n", s)
+		return nil
+	})
 	assistantBot.AddResponseListener(bots.SpeakResultFunc)
 	commanderBot := botFactory.CreateBotWithHistoryAndCopy("Commander", properties["commanderSystemMsg"], properties["commanderPromptMsg"], 0, 1, 2, voices.German)
 	commanderBot.AddResponseListener(bots.ExecuteCommandResultFunc)
