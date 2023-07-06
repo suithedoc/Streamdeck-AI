@@ -2,7 +2,6 @@ package bots
 
 import (
 	"OpenAITest/model"
-	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"bufio"
 	"fmt"
@@ -82,75 +81,75 @@ func EvaluateCommanderGptResponseStrings(input []string, withHistory bool, scann
 	}
 }
 
-func InitCommanderGPTBot(client *openai.Client, device sd.DeviceWrapper, properties map[string]string,
-	streamdeckHandler sd.IStreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
-
-	commanderSystemMsg := properties["commanderSystemMsg"]
-	commanderPromptMsg := properties["commanderPromptMsg"]
-	commanderChatContent := model.ChatContent{
-		SystemMsg:       commanderSystemMsg,
-		PromptMsg:       commanderPromptMsg,
-		HistoryMessages: []openai.ChatCompletionMessage{},
-	}
-
-	if buttonWithoutHistory >= 0 {
-		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithoutHistory), "Commander")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		streamdeckHandler.AddOnPressHandler(int(buttonWithoutHistory), func() error {
-			go func() {
-				isRecording = true
-				utils.RecordAndSaveAudioAsMp3("audio.wav", quitChannel, finished)
-			}()
-			return nil
-		})
-
-		streamdeckHandler.AddOnReleaseHandler(int(buttonWithoutHistory), func() error {
-			if isRecording {
-				quitChannel <- true
-				<-finished
-				isRecording = false
-				transcription, err := utils.ParseMp3ToText("audio.wav", client)
-				if err != nil {
-					fmt.Printf("Error parsing mp3 to text: %s\n", err)
-					return nil
-				}
-				EvaluateCommanderGptResponseStrings([]string{transcription}, false, scanner, commanderChatContent, client)
-			}
-			return nil
-		})
-	}
-
-	if buttonWithHistory >= 0 {
-		err := sd.SetStreamdeckButtonText(device, uint8(buttonWithHistory), "HCommander")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		streamdeckHandler.AddOnPressHandler(int(buttonWithHistory), func() error {
-			go func() {
-				isRecording = true
-				utils.RecordAndSaveAudioAsMp3("audio.wav", quitChannel, finished)
-			}()
-			return nil
-		})
-
-		streamdeckHandler.AddOnReleaseHandler(int(buttonWithHistory), func() error {
-			if isRecording {
-				quitChannel <- true
-				<-finished
-				isRecording = false
-				transcription, err := utils.ParseMp3ToText("audio.wav", client)
-				if err != nil {
-					fmt.Printf("Error parsing mp3 to text: %s\n", err)
-					return nil
-				}
-				EvaluateCommanderGptResponseStrings([]string{transcription}, true, scanner, commanderChatContent, client)
-			}
-			return nil
-		})
-	}
-	return &commanderChatContent
-}
+//func InitCommanderGPTBot(client *openai.Client, device *streamdeck.Device, properties map[string]string,
+//	streamdeckHandler streamdeck2.IStreamdeckHandler, scanner *bufio.Scanner, buttonWithoutHistory int16, buttonWithHistory int16) *model.ChatContent {
+//
+//	commanderSystemMsg := properties["commanderSystemMsg"]
+//	commanderPromptMsg := properties["commanderPromptMsg"]
+//	commanderChatContent := model.ChatContent{
+//		SystemMsg:       commanderSystemMsg,
+//		PromptMsg:       commanderPromptMsg,
+//		HistoryMessages: []openai.ChatCompletionMessage{},
+//	}
+//
+//	if buttonWithoutHistory >= 0 {
+//		err := streamdeckHandler.AddButtonText(int(buttonWithoutHistory), "Commander")
+//		if err != nil {
+//			log.Fatal(err)
+//		}
+//
+//		streamdeckHandler.AddOnPressHandler(int(buttonWithoutHistory), func() error {
+//			go func() {
+//				isRecording = true
+//				utils.RecordAndSaveAudioAsMp3("audio.wav", quitChannel, finished)
+//			}()
+//			return nil
+//		})
+//
+//		streamdeckHandler.AddOnReleaseHandler(int(buttonWithoutHistory), func() error {
+//			if isRecording {
+//				quitChannel <- true
+//				<-finished
+//				isRecording = false
+//				transcription, err := utils.ParseMp3ToText("audio.wav", client)
+//				if err != nil {
+//					fmt.Printf("Error parsing mp3 to text: %s\n", err)
+//					return nil
+//				}
+//				EvaluateCommanderGptResponseStrings([]string{transcription}, false, scanner, commanderChatContent, client)
+//			}
+//			return nil
+//		})
+//	}
+//
+//	if buttonWithHistory >= 0 {
+//		err := streamdeckHandler.AddButtonText(int(buttonWithHistory), "HCommander")
+//		if err != nil {
+//			log.Fatal(err)
+//		}
+//
+//		streamdeckHandler.AddOnPressHandler(int(buttonWithHistory), func() error {
+//			go func() {
+//				isRecording = true
+//				utils.RecordAndSaveAudioAsMp3("audio.wav", quitChannel, finished)
+//			}()
+//			return nil
+//		})
+//
+//		streamdeckHandler.AddOnReleaseHandler(int(buttonWithHistory), func() error {
+//			if isRecording {
+//				quitChannel <- true
+//				<-finished
+//				isRecording = false
+//				transcription, err := utils.ParseMp3ToText("audio.wav", client)
+//				if err != nil {
+//					fmt.Printf("Error parsing mp3 to text: %s\n", err)
+//					return nil
+//				}
+//				EvaluateCommanderGptResponseStrings([]string{transcription}, true, scanner, commanderChatContent, client)
+//			}
+//			return nil
+//		})
+//	}
+//	return &commanderChatContent
+//}

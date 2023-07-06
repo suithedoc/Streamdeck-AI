@@ -2,7 +2,7 @@ package bots
 
 import (
 	"OpenAITest/model"
-	sd "OpenAITest/streamdeck"
+	streamdeck2 "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -104,8 +104,8 @@ func EvaluateMinecraftGptResponseStrings(input []string, chatContent model.ChatC
 	}
 }
 
-func InitMinecraftGPTBot(client *openai.Client, device sd.DeviceWrapper, properties map[string]string,
-	streamdeckHandler sd.IStreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding, button uint8) {
+func InitMinecraftGPTBot(client *openai.Client, device streamdeck2.DeviceWrapper, properties map[string]string,
+	streamdeckHandler streamdeck2.IStreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding, button uint8) {
 	minecraftSystemMsg := properties["minecraftSystemMsg"]
 	minecraftPromptMsg := properties["minecraftPromptMsg"]
 
@@ -113,8 +113,7 @@ func InitMinecraftGPTBot(client *openai.Client, device sd.DeviceWrapper, propert
 		SystemMsg: minecraftSystemMsg,
 		PromptMsg: minecraftPromptMsg,
 	}
-
-	err := sd.SetStreamdeckButtonText(device, button, "Minecraft")
+	err := streamdeckHandler.AddButtonText(int(button), "Minecraft")
 	if err != nil {
 		log.Fatal(err)
 	}

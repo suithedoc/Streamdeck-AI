@@ -3,13 +3,12 @@ module OpenAITest
 go 1.20
 
 require (
-	fyne.io/fyne/v2 v2.3.4
+	fyne.io/fyne/v2 v2.3.5
 	git.tcp.direct/kayos/sendkeys v0.0.0-20211216174833-565f782ccf21
 	github.com/MichaelMure/go-term-markdown v0.1.4
 	github.com/Picovoice/porcupine/binding/go/v2 v2.2.0
 	github.com/Picovoice/pvrecorder/sdk/go v1.1.1
 	github.com/bwmarrin/discordgo v0.27.1
-	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/fatih/color v1.9.0
 	github.com/flopp/go-findfont v0.1.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
@@ -29,10 +28,9 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.0.0 // indirect
-	fyne.io/systray v1.10.1-0.20230403195833-7dc3c09283d6 // indirect
+	fyne.io/systray v1.10.1-0.20230602210930-b6a2d6ca2a7b // indirect
 	github.com/MichaelMure/go-term-text v0.3.1 // indirect
 	github.com/alecthomas/chroma v0.10.0 // indirect
-	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
@@ -61,8 +59,6 @@ require (
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-pointer v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
-	github.com/muesli/reflow v0.3.0 // indirect
-	github.com/muesli/termenv v0.15.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/srwiley/oksvg v0.0.0-20220731023508-a61f04f16b76 // indirect
@@ -83,6 +79,6 @@ require (
 	rsc.io/qr v0.2.0 // indirect
 )
 
-replace github.com/tinyzimmer/go-gst => github.com/livekit/go-gst v0.2.34-0.20230210170313-8fc9f59623d4
+replace github.com/tinyzimmer/go-gst => github.com/db-tech/go-gst v0.0.0-20230703192810-282564803eda
 
-//replace github.com/tinyzimmer/go-gst => /home/dennis/GolandProjects/go-gst
+//replace github.com/tinyzimmer/go-gst => ../go-gst

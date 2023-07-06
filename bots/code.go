@@ -2,7 +2,7 @@ package bots
 
 import (
 	"OpenAITest/model"
-	sd "OpenAITest/streamdeck"
+	streamdeck2 "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -59,15 +59,15 @@ func EvaluateCodeGptResponseStrings(input []string, chatContent model.ChatConten
 	}
 }
 
-func InitCodeGPTBot(client *openai.Client, device sd.DeviceWrapper, properties map[string]string,
-	streamdeckHandler sd.IStreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding, button uint8) {
+func InitCodeGPTBot(client *openai.Client, device streamdeck2.DeviceWrapper, properties map[string]string,
+	streamdeckHandler streamdeck2.IStreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding, button uint8) {
 
 	codeChatContent := model.ChatContent{
 		SystemMsg: properties["codeSystemMsg"],
 		PromptMsg: properties["codePromptMsg"],
 	}
 
-	err := sd.SetStreamdeckButtonText(device, button, "Code")
+	err := streamdeckHandler.AddButtonText(int(button), "Code")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,7 +79,7 @@ func InitCodeGPTBot(client *openai.Client, device sd.DeviceWrapper, properties m
 		}()
 		return nil
 	})
-	streamdeckHandler.AddOnReleaseHandler(int(button), func() error {
+	streamdeckHandler.AddOnReleaseHandler(streamdeckHandler.ReverseTraverseButtonId(int(button)), func() error {
 		if isRecording {
 			quitChannel <- true
 			<-finished

@@ -3,6 +3,7 @@ package main
 import (
 	"OpenAITest/bots"
 	"OpenAITest/model"
+	sd "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"OpenAITest/wakeword"
 	"bufio"
@@ -10,31 +11,29 @@ import (
 	"fmt"
 	"git.tcp.direct/kayos/sendkeys"
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/charmbracelet/lipgloss"
 	fcolor "github.com/fatih/color"
-	htgotts "github.com/hegedustibor/htgo-tts"
+	"github.com/hegedustibor/htgo-tts"
 	"github.com/hegedustibor/htgo-tts/handlers"
 	"github.com/hegedustibor/htgo-tts/voices"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/micmonay/keybd_event"
 	openai "github.com/sashabaranov/go-openai"
 	"github.com/tinyzimmer/go-gst/gst"
 	"go.mau.fi/whatsmeow/types/events"
 	"golang.design/x/clipboard"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"time"
-
-	sd "OpenAITest/streamdeck"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/micmonay/keybd_event"
 )
 
 var (
-	style  lipgloss.Style
-	c      *fcolor.Color
+	//style  lipgloss.Style
+	color  *fcolor.Color
 	client *openai.Client
 	speech *htgotts.Speech
 	kbw    *sendkeys.KBWrap
@@ -78,7 +77,8 @@ func AsyncConsoleOutput() {
 	}()
 }
 
-//func StartListenStreamDeckAsync(device sd.DeviceWrapper) error {
+//
+//func StartListenStreamDeckAsync(device *streamdeck.Device) error {
 //
 //	go func() {
 //		keys, err := device.ReadKeys()
@@ -246,14 +246,26 @@ func InitWakeWord(properties map[string]string, kb *keybd_event.KeyBonding) (err
 	return nil
 }
 
+func downloadUrlContent(url string) (string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(bodyBytes), nil
+}
+
 func main() {
 	var err error
 
-	scanner := bufio.NewScanner(os.Stdin)
-	quitChannel := make(chan bool)
-	finished := make(chan bool)
-	isRecording := false
 	//device, err := sd.InitStreamdeckDevice()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	streamdeckHandler, err = sd.NewStreamdeckHandler()
 	if err != nil || streamdeckHandler == nil {
 		streamdeckHandler, err = sd.NewUiStreamdeckHandler()
@@ -262,6 +274,9 @@ func main() {
 		}
 	}
 	device := streamdeckHandler.GetDevice()
+	if device == nil {
+		log.Fatal("No device found")
+	}
 	err = device.Clear()
 	if err != nil {
 		log.Fatal(err)
@@ -283,6 +298,7 @@ func main() {
 		return
 	}
 
+	//properties, err :=LoadPropertiesFromJsonFile("config.json")
 	properties, err := LoadPropertiesFromIniFile("config.ini")
 	if err != nil {
 		log.Fatal(err)
@@ -309,11 +325,44 @@ func main() {
 		bots.InitDiscordBot(client, properties)
 	}
 
-	commanderChatContent := bots.InitCommanderGPTBot(client, device, properties, streamdeckHandler, scanner, 0, 5)
-	assistantChatContent := bots.InitAssistantGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 1, 6, 11)
-	bots.InitWhisperBot(streamdeckHandler, device, &kb, client, 2)
-	bots.InitMinecraftGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 3)
-	bots.InitCodeGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 4)
+	botFactory := bots.NewBotFactory(streamdeckHandler, client, device, &kb)
+
+	assistantBot := botFactory.CreateBotWithHistoryAndCopy("Assistant", properties["assistantSystemMsg"], properties["assistantPromptMsg"], 3, 4, 5, voices.German)
+	assistantBot.AddResponseListener(func(bot *bots.AiBot, s string) error {
+		fmt.Printf("Assistant: %s\n", s)
+		return nil
+	})
+	assistantBot.AddResponseListener(bots.SpeakResultFunc)
+	commanderBot := botFactory.CreateBotWithHistoryAndCopy("Commander", properties["commanderSystemMsg"], properties["commanderPromptMsg"], 0, 1, 2, voices.German)
+	commanderBot.AddResponseListener(bots.ExecuteCommandResultFunc)
+
+	labelBot := botFactory.CreateBotWithHistory("Label",
+		"Analyse the Input that I give you and only respond with one word. A label that best describes the input."+
+			"If it is necessary to search the internet for resolving the request, respond with 'search'."+
+			"If the request contains a development question, respond with 'code'."+
+			"If the request could be resolved by a linux command, respond with 'linux'.",
+		"",
+		6, 7, voices.German)
+	labelBot.AddResponseListener(func(bot *bots.AiBot, s string) error {
+
+		fmt.Printf("Label: %s\n", s)
+		if strings.Contains(s, "search") {
+			lastMessage := bot.CompletionHistory[0]
+			fmt.Println("Last message: ", lastMessage.Content)
+			fmt.Println("Last message: ", lastMessage.Content)
+			err := commanderBot.EvaluateGptResponseStrings([]string{"To solve the following request, search with googler --noprompt and use" +
+				"wget to download the content of the first url found with googler.", lastMessage.Content})
+			if err != nil {
+				log.Fatal(err)
+			}
+
+		}
+		return nil
+	})
+
+	//bots.InitWhisperBot(streamdeckHandler, device, &kb, client, 2)
+	bots.InitMinecraftGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 9)
+	bots.InitCodeGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 10)
 
 	//err = InitWakeWordCommander(properties, commanderChatContent, &kb, client)
 	//if err != nil {
@@ -321,31 +370,27 @@ func main() {
 	//	os.Exit(1)
 	//}
 
-	//evaluators.InitGoogooGPTBot(client, device, properties, streamdeckHandler, scanner, 10, 11)
-	//err = StartListenStreamDeckAsync(device)
 	err = streamdeckHandler.StartListenAsync()
 	if err != nil {
-		println(err.Error())
+		log.Fatal(err)
 	}
 
 	gst.Init(nil)
 	AsyncConsoleOutput()
 
-	style = lipgloss.NewStyle().
-		Bold(true).
-		Background(lipgloss.Color("#7D56F4")).
-		PaddingTop(2).
-		PaddingLeft(4).
-		Width(22)
+	//style = lipgloss.NewStyle().
+	//	Bold(true).
+	//	Background(lipgloss.Color("#7D56F4")).
+	//	PaddingTop(2).
+	//	PaddingLeft(4).
+	//	Width(22)
 
-	c = fcolor.New(fcolor.FgCyan).Add(fcolor.BgWhite)
+	color = fcolor.New(fcolor.FgCyan).Add(fcolor.BgWhite)
 	// Scanner
 
 	err = InitWakeWord(properties, &kb)
 	if err != nil {
-		log.Printf("initializing wakeword: %v", err)
-
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("initializing wakeword: %v", err))
 	}
 
 	//porcupineAccessKey := properties["PorcupineAccessKey"]
@@ -368,13 +413,22 @@ func main() {
 	//	}
 	//}()
 
+	startCommandlineInput(assistantBot, commanderBot)
+}
+
+func startCommandlineInput(assistantBot *bots.AiBot, commanderBot *bots.AiBot) {
+	isRecording := false
+	quitChannel := make(chan bool)
+	finished := make(chan bool)
+	scanner := bufio.NewScanner(os.Stdin)
+
 	for {
 		if !isRecording {
 			fmt.Print("Enter Multiline Input: \n")
 		} else {
 			fmt.Print("Stop recording with 'r' \n")
 		}
-		c.Print(">")
+		color.Print(">")
 		input := RunAndWaitForInputMessage(scanner)
 		if len(input) == 1 && input[0] == "r" {
 			if isRecording {
@@ -403,14 +457,14 @@ func main() {
 		}
 
 		if strings.HasPrefix(input[0], "a:") {
-			bots.EvaluateAssistantGptResponseStrings(input, false, *assistantChatContent, client, speech)
+			assistantBot.EvaluateGptResponseStrings(input)
 			continue
 		} else if strings.HasPrefix(input[0], "ah:") {
-			bots.EvaluateAssistantGptResponseStrings(input, true, *assistantChatContent, client, speech)
+			assistantBot.EvaluateGptResponseStringsWithHistory(input)
 		} else if strings.HasPrefix(input[0], "h:") {
-			bots.EvaluateCommanderGptResponseStrings(input, true, scanner, *commanderChatContent, client)
+			commanderBot.EvaluateGptResponseStringsWithHistory(input)
 		} else {
-			bots.EvaluateCommanderGptResponseStrings(input, false, scanner, *commanderChatContent, client)
+			commanderBot.EvaluateGptResponseStrings(input)
 		}
 	}
 }
@@ -509,7 +563,7 @@ func RunAndWaitForInputMessage(scanner *bufio.Scanner) []string {
 		} else {
 			break
 		}
-		c.Print(">")
+		color.Print(">")
 	}
 
 	return input
