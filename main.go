@@ -360,9 +360,35 @@ func main() {
 		return nil
 	})
 
+	codeBot := botFactory.CreateBotWithHistoryAndCopy("Cpp", properties["cppSystemMsg"], properties["cppPromptMsg"], 8, 11, 10, voices.German)
+	codeBot.AddResponseListener(func(bot *bots.AiBot, answer string) error {
+		codeBlocks := utils.ExtractCodeBlockFromMarkdown(answer)
+		if len(codeBlocks) == 0 {
+			codeBlocks = utils.ExtractCodeBlockFromMarkdownWithOneBacktick(answer)
+		}
+		if len(codeBlocks) == 0 {
+			log.Println("No code block found")
+			fmt.Println("No Code blocks found in this: ", answer)
+		}
+		fmt.Println("Code blocks found: ", len(codeBlocks))
+		allCodeBlocks := strings.Join(codeBlocks, "\n")
+		err = utils.TypeCodeCommand(allCodeBlocks, &kb)
+		if err != nil {
+			fmt.Printf("Error typing command: %v\n", err)
+		}
+		return nil
+	})
+
+	englishTeacherBot := botFactory.CreateBotWithHistory("English",
+		properties["englishTeacherSystemMsg"],
+		properties["englishTeacherPromptMsg"],
+		1,
+		2, voices.English)
+	englishTeacherBot.AddResponseListener(bots.SpeakResultFunc)
 	//bots.InitWhisperBot(streamdeckHandler, device, &kb, client, 2)
 	bots.InitMinecraftGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 9)
-	bots.InitCodeGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 10)
+	assistantBot.AddResponseListener(bots.SpeakResultFunc)
+	//bots.InitCodeGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 10)
 
 	//err = InitWakeWordCommander(properties, commanderChatContent, &kb, client)
 	//if err != nil {

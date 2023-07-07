@@ -4,11 +4,29 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/micmonay/keybd_event"
+	"golang.design/x/clipboard"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
+
+func TypeCodeCommand(command string, kb *keybd_event.KeyBonding) error {
+	clipboard.Write(clipboard.FmtText, []byte(command))
+	time.Sleep(100 * time.Millisecond)
+	kb.HasCTRL(true)
+	kb.SetKeys(keybd_event.VK_V)
+	err := kb.Launching()
+	if err != nil {
+		fmt.Printf("Error launching keyboard: %v\n", err)
+		return err
+	}
+	kb.HasCTRL(false)
+	time.Sleep(20 * time.Millisecond)
+	return nil
+}
 
 func SplitStringByDot(input string) []string {
 	return strings.Split(input, ".")
