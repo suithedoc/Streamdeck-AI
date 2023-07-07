@@ -32,31 +32,31 @@ func NewStreamdeckHandler() (IStreamdeckHandler, error) {
 }
 
 func (sh *StreamdeckHandler) AddButtonText(buttonId int, text string) error {
-	sh.buttonItToText[sh.TraverseButtonId(buttonId)] = text
+	sh.buttonItToText[TraverseButtonId(buttonId, sh.GetDevice())] = text
 	return nil
 }
 
 func (sh *StreamdeckHandler) SwitchPage(page int) {
 	sh.device.Clear()
 	sh.page = page
-	err := SetStreamdeckButtonText(sh.device, sh.device.device.Columns-1, ">")
+	err := SetStreamdeckButtonText(sh.GetDevice(), sh.device.device.Columns-1, ">")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = SetStreamdeckButtonText(sh.device, sh.device.device.Columns*2-1, strconv.Itoa(sh.page))
+	err = SetStreamdeckButtonText(sh.GetDevice(), sh.device.device.Columns*2-1, strconv.Itoa(sh.page))
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = SetStreamdeckButtonText(sh.device, sh.device.device.Columns*3-1, "<")
+	err = SetStreamdeckButtonText(sh.GetDevice(), sh.device.device.Columns*3-1, "<")
 	if err != nil {
 		log.Fatal(err)
 	}
 	for buttonId, text := range sh.buttonItToText {
-		reverseButtonId := sh.ReverseTraverseButtonId(buttonId)
+		reverseButtonId := ReverseTraverseButtonId(buttonId, sh.GetDevice())
 		buttonIdPerPage := reverseButtonId - (sh.page-1)*sh.numOfButtons
 		if reverseButtonId >= 0 && buttonIdPerPage < sh.numOfButtons {
 			//newId := sh.TraverseButtonId(buttonIdPerPage)
-			err := SetStreamdeckButtonText(sh.device, uint8(sh.TraverseButtonId(buttonIdPerPage)), text)
+			err := SetStreamdeckButtonText(sh.device, uint8(TraverseButtonId(buttonIdPerPage, sh.GetDevice())), text)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -97,16 +97,16 @@ func (sh *StreamdeckHandler) StartListenAsync() error {
 			select {
 			case key := <-keys:
 				fmt.Printf("Key pressed index %v, is pressed %v\n", key.Index, key.Pressed)
-				fmt.Printf("Key pressed index reverseTransverse %v, is pressed %v\n", sh.ReverseTraverseButtonId(int(key.Index)), key.Pressed)
+				fmt.Printf("Key pressed index reverseTransverse %v, is pressed %v\n", ReverseTraverseButtonId(int(key.Index), sh.GetDevice()), key.Pressed)
 				if key.Pressed {
-					if handler, ok := sh.GetOnPressHandler(sh.ReverseTraverseButtonId(int(key.Index))); ok {
+					if handler, ok := sh.GetOnPressHandler(ReverseTraverseButtonId(int(key.Index), sh.GetDevice())); ok {
 						err := handler()
 						if err != nil {
 							log.Fatal(err)
 						}
 					}
 				} else {
-					if handler, ok := sh.GetOnReleaseHandler(sh.ReverseTraverseButtonId(int(key.Index))); ok {
+					if handler, ok := sh.GetOnReleaseHandler(ReverseTraverseButtonId(int(key.Index), sh.GetDevice())); ok {
 						err := handler()
 						if err != nil {
 							log.Fatal(err)
@@ -114,64 +114,7 @@ func (sh *StreamdeckHandler) StartListenAsync() error {
 					}
 				}
 			}
-			//select {
-			//case key := <-keys:
-			//	fmt.Printf("Key pressed index %v, is pressed %v\n", key.Index, key.Pressed)
-			//	if key.Pressed {
-			//		reverseButtonId := sh.ReverseTraverseButtonId(int(key.Index))
-			//		buttonIdPerPage := reverseButtonId - (sh.page-1)*int(sh.device.device.Rows*sh.device.device.Columns)
-			//		if reverseButtonId >= 0 && buttonIdPerPage < int(sh.device.device.Rows*sh.device.device.Columns) {
-			//			if handler, ok := sh.GetOnPressHandler(int(key.Index)); ok {
-			//				err := handler()
-			//				if err != nil {
-			//					log.Fatal(err)
-			//				}
-			//			}
-			//		}
-			//	} else {
-			//		reverseButtonId := sh.ReverseTraverseButtonId(int(key.Index))
-			//		buttonIdPerPage := reverseButtonId - (sh.page-1)*sh.numOfButtons
-			//		if reverseButtonId >= 0 && buttonIdPerPage < sh.numOfButtons {
-			//			if handler, ok := sh.GetOnReleaseHandler(int(key.Index)); ok {
-			//				err := handler()
-			//				if err != nil {
-			//					log.Fatal(err)
-			//				}
-			//			}
-			//		}
-			//	}
-			//}
 		}
 	}()
 	return nil
-}
-
-// Convert the convinient numbering, from top to bottom, left to right, to the actual button id.
-func (sh *StreamdeckHandler) TraverseButtonId(buttonId int) int {
-	rows := int(sh.device.device.Rows)
-	cols := int(sh.device.device.Columns)
-
-	// Convert the vertical-first index into a row and column.
-	row := buttonId % rows
-	col := buttonId / rows
-
-	// Convert the row and column into a horizontal-first index.
-	newButtonId := row*cols + col
-
-	return newButtonId
-}
-
-// Convert the actual button id which is from left to right, top to bottom, to the convinient numbering.
-func (sh *StreamdeckHandler) ReverseTraverseButtonId(buttonId int) int {
-	rows := int(sh.device.device.Rows)
-	cols := int(sh.device.device.Columns)
-
-	// Convert the horizontal-first index into a row and column.
-	row := buttonId / cols
-	col := buttonId % cols
-
-	// Convert the row and column into a vertical-first index.
-	newButtonId := col*rows + row
-
-	return newButtonId
 }

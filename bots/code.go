@@ -79,7 +79,7 @@ func InitCodeGPTBot(client *openai.Client, device streamdeck2.DeviceWrapper, pro
 		}()
 		return nil
 	})
-	streamdeckHandler.AddOnReleaseHandler(streamdeckHandler.ReverseTraverseButtonId(int(button)), func() error {
+	streamdeckHandler.AddOnReleaseHandler(streamdeck2.ReverseTraverseButtonId(int(button), streamdeckHandler.GetDevice()), func() error {
 		if isRecording {
 			quitChannel <- true
 			<-finished

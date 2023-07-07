@@ -10,7 +10,7 @@ type IStreamdeckHandler interface {
 	StartListenAsync() error
 
 	AddButtonText(buttonId int, text string) error
-	TraverseButtonId(buttonId int) int
-	ReverseTraverseButtonId(buttonId int) int
+	//TraverseButtonId(buttonId int) int
+	//ReverseTraverseButtonId(buttonId int) int
 	//StartAsync()
 }

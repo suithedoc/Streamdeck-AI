@@ -336,29 +336,29 @@ func main() {
 	commanderBot := botFactory.CreateBotWithHistoryAndCopy("Commander", properties["commanderSystemMsg"], properties["commanderPromptMsg"], 0, 1, 2, voices.German)
 	commanderBot.AddResponseListener(bots.ExecuteCommandResultFunc)
 
-	labelBot := botFactory.CreateBotWithHistory("Label",
-		"Analyse the Input that I give you and only respond with one word. A label that best describes the input."+
-			"If it is necessary to search the internet for resolving the request, respond with 'search'."+
-			"If the request contains a development question, respond with 'code'."+
-			"If the request could be resolved by a linux command, respond with 'linux'.",
-		"",
-		6, 7, voices.German)
-	labelBot.AddResponseListener(func(bot *bots.AiBot, s string) error {
-
-		fmt.Printf("Label: %s\n", s)
-		if strings.Contains(s, "search") {
-			lastMessage := bot.CompletionHistory[0]
-			fmt.Println("Last message: ", lastMessage.Content)
-			fmt.Println("Last message: ", lastMessage.Content)
-			err := commanderBot.EvaluateGptResponseStrings([]string{"To solve the following request, search with googler --noprompt and use" +
-				"wget to download the content of the first url found with googler.", lastMessage.Content})
-			if err != nil {
-				log.Fatal(err)
-			}
-
-		}
-		return nil
-	})
+	//labelBot := botFactory.CreateBotWithHistory("Label",
+	//	"Analyse the Input that I give you and only respond with one word. A label that best describes the input."+
+	//		"If it is necessary to search the internet for resolving the request, respond with 'search'."+
+	//		"If the request contains a development question, respond with 'code'."+
+	//		"If the request could be resolved by a linux command, respond with 'linux'.",
+	//	"",
+	//	6, 7, voices.German)
+	//labelBot.AddResponseListener(func(bot *bots.AiBot, s string) error {
+	//
+	//	fmt.Printf("Label: %s\n", s)
+	//	if strings.Contains(s, "search") {
+	//		lastMessage := bot.CompletionHistory[0]
+	//		fmt.Println("Last message: ", lastMessage.Content)
+	//		fmt.Println("Last message: ", lastMessage.Content)
+	//		err := commanderBot.EvaluateGptResponseStrings([]string{"To solve the following request, search with googler --noprompt and use" +
+	//			"wget to download the content of the first url found with googler.", lastMessage.Content})
+	//		if err != nil {
+	//			log.Fatal(err)
+	//		}
+	//
+	//	}
+	//	return nil
+	//})
 
 	codeBot := botFactory.CreateBotWithHistoryAndCopy("Cpp", properties["cppSystemMsg"], properties["cppPromptMsg"], 8, 11, 10, voices.German)
 	codeBot.AddResponseListener(func(bot *bots.AiBot, answer string) error {
@@ -379,15 +379,15 @@ func main() {
 		return nil
 	})
 
-	englishTeacherBot := botFactory.CreateBotWithHistory("English",
-		properties["englishTeacherSystemMsg"],
-		properties["englishTeacherPromptMsg"],
-		1,
-		2, voices.English)
-	englishTeacherBot.AddResponseListener(bots.SpeakResultFunc)
+	//englishTeacherBot := botFactory.CreateBotWithHistory("English",
+	//	properties["englishTeacherSystemMsg"],
+	//	properties["englishTeacherPromptMsg"],
+	//	1,
+	//	2, voices.English)
+	//englishTeacherBot.AddResponseListener(bots.SpeakResultFunc)
 	//bots.InitWhisperBot(streamdeckHandler, device, &kb, client, 2)
-	bots.InitMinecraftGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 9)
-	assistantBot.AddResponseListener(bots.SpeakResultFunc)
+	//bots.InitMinecraftGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 9)
+	//assistantBot.AddResponseListener(bots.SpeakResultFunc)
 	//bots.InitCodeGPTBot(client, device, properties, streamdeckHandler, speech, &kb, 10)
 
 	//err = InitWakeWordCommander(properties, commanderChatContent, &kb, client)
@@ -396,10 +396,10 @@ func main() {
 	//	os.Exit(1)
 	//}
 
-	err = streamdeckHandler.StartListenAsync()
-	if err != nil {
-		log.Fatal(err)
-	}
+	//err = streamdeckHandler.StartListenAsync()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	gst.Init(nil)
 	AsyncConsoleOutput()
@@ -438,6 +438,10 @@ func main() {
 	//		}
 	//	}
 	//}()
+	err = streamdeckHandler.StartListenAsync()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	startCommandlineInput(assistantBot, commanderBot)
 }
