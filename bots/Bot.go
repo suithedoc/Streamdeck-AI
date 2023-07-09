@@ -17,20 +17,21 @@ import (
 )
 
 type AiBot struct {
-	Name                               string
-	SystemMsg                          string
-	PromptMSg                          string
-	StreamdeckDevice                   sd.DeviceWrapper
-	StreamDeckButton                   int // Set to -1 to disable
-	StreamDeckButtonWithHistory        int // Set to -1 to disable
-	StreamDeckButtonWithHistoryAndCopy int // Set to -1 to disable
-	streamdeckHandler                  sd.IStreamdeckHandler
-	OpenaiClient                       *openai.Client
-	ChatContent                        model.ChatContent
-	speech                             *htgotts.Speech
-	keyBonding                         *keybd_event.KeyBonding
-	CompletionHistory                  []openai.ChatCompletionMessage
-	responseListeners                  []func(*AiBot, string) error
+	Name             string
+	SystemMsg        string
+	PromptMSg        string
+	StreamdeckDevice sd.DeviceWrapper
+	ButtonConfig     sd.StreamdeckButtonConfig
+	//StreamDeckButton                   int // Set to -1 to disable
+	//StreamDeckButtonWithHistory        int // Set to -1 to disable
+	//StreamDeckButtonWithHistoryAndCopy int // Set to -1 to disable
+	streamdeckHandler sd.IStreamdeckHandler
+	OpenaiClient      *openai.Client
+	ChatContent       model.ChatContent
+	speech            *htgotts.Speech
+	keyBonding        *keybd_event.KeyBonding
+	CompletionHistory []openai.ChatCompletionMessage
+	responseListeners []func(*AiBot, string) error
 }
 
 func (bot *AiBot) AddResponseListener(listener func(*AiBot, string) error) {
@@ -38,126 +39,130 @@ func (bot *AiBot) AddResponseListener(listener func(*AiBot, string) error) {
 }
 
 func (bot *AiBot) init() {
-	if bot.StreamDeckButton >= 0 {
+	if bot.ButtonConfig.ButtonIndex >= 0 {
 		if bot.streamdeckHandler == nil {
 			log.Fatal("Streamdeck handler not set")
 		}
-		err := bot.streamdeckHandler.AddButtonText(bot.StreamDeckButton, bot.Name)
+		err := bot.streamdeckHandler.AddButtonText(bot.ButtonConfig.Page, bot.ButtonConfig.ButtonIndex, bot.Name)
 		if err != nil {
 			log.Fatal(err)
 		}
-		bot.streamdeckHandler.AddOnPressHandler(bot.StreamDeckButton, func() error {
+		bot.streamdeckHandler.AddOnPressHandler(bot.ButtonConfig.Page, bot.ButtonConfig.ButtonIndex, func() error {
 			go func() {
 				isRecording = true
 				utils.RecordAndSaveAudioAsMp3(fmt.Sprintf("audio%v.wav", bot.Name), quitChannel, finished)
 			}()
 			return nil
 		})
-		bot.streamdeckHandler.AddOnReleaseHandler(
-			bot.StreamDeckButton,
-			func() error {
-				if isRecording {
-					quitChannel <- true
-					<-finished
-					isRecording = false
-					transcription, err := utils.ParseMp3ToText(fmt.Sprintf("audio%v.wav", bot.Name), bot.OpenaiClient)
-					if err != nil {
-						fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
-						return nil
-					}
-					bot.EvaluateGptResponseStrings([]string{transcription})
+		bot.streamdeckHandler.AddOnReleaseHandler(bot.ButtonConfig.Page, bot.ButtonConfig.ButtonIndex, func() error {
+			if isRecording {
+				quitChannel <- true
+				<-finished
+				isRecording = false
+				transcription, err := utils.ParseMp3ToText(fmt.Sprintf("audio%v.wav", bot.Name), bot.OpenaiClient)
+				if err != nil {
+					fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
+					return nil
 				}
-				return nil
-			},
-		)
+				err = bot.EvaluateGptResponseStrings([]string{transcription})
+				if err != nil {
+					fmt.Printf("Error evaluating gpt response: %s\n", err)
+					return err
+				}
+			}
+			return nil
+		})
 	}
-	if bot.StreamDeckButtonWithHistory >= 0 {
-		err := bot.streamdeckHandler.AddButtonText(bot.StreamDeckButtonWithHistory, "H"+bot.Name)
+	if bot.ButtonConfig.ButtonIndexHistory >= 0 {
+		err := bot.streamdeckHandler.AddButtonText(bot.ButtonConfig.Page, bot.ButtonConfig.ButtonIndexHistory, "H"+bot.Name)
 		if err != nil {
 			log.Fatal(err)
 		}
-		bot.streamdeckHandler.AddOnPressHandler(bot.StreamDeckButtonWithHistory, func() error {
+		bot.streamdeckHandler.AddOnPressHandler(bot.ButtonConfig.Page, bot.ButtonConfig.ButtonIndexHistory, func() error {
 			go func() {
 				isRecording = true
 				utils.RecordAndSaveAudioAsMp3(fmt.Sprintf("audio%vHist.wav", bot.Name), quitChannel, finished)
 			}()
 			return nil
 		})
-		bot.streamdeckHandler.AddOnReleaseHandler(
-			int(bot.StreamDeckButtonWithHistory),
-			func() error {
-				if isRecording {
-					quitChannel <- true
-					<-finished
-					isRecording = false
-					transcription, err := utils.ParseMp3ToText(fmt.Sprintf("audio%vHist.wav", bot.Name), bot.OpenaiClient)
-					if err != nil {
-						fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
-						return nil
-					}
-					bot.EvaluateGptResponseStringsWithHistory([]string{transcription})
+		bot.streamdeckHandler.AddOnReleaseHandler(bot.ButtonConfig.Page, bot.ButtonConfig.ButtonIndexHistory, func() error {
+			if isRecording {
+				quitChannel <- true
+				<-finished
+				isRecording = false
+				transcription, err := utils.ParseMp3ToText(fmt.Sprintf("audio%vHist.wav", bot.Name), bot.OpenaiClient)
+				if err != nil {
+					fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
+					return nil
 				}
-				return nil
-			},
-		)
+				err = bot.EvaluateGptResponseStringsWithHistory([]string{transcription})
+				if err != nil {
+					fmt.Printf("Error evaluating gpt response: %s\n", err)
+					return err
+				}
+			}
+			return nil
+		})
 	}
 
-	if bot.StreamDeckButtonWithHistoryAndCopy >= 0 {
-		err := bot.streamdeckHandler.AddButtonText(bot.StreamDeckButtonWithHistoryAndCopy, "HP"+bot.Name)
+	if bot.ButtonConfig.ButtonIndexHistoryAndCopy >= 0 {
+		err := bot.streamdeckHandler.AddButtonText(bot.ButtonConfig.Page, bot.ButtonConfig.ButtonIndexHistoryAndCopy, "HP"+bot.Name)
 		if err != nil {
 			log.Fatal(err)
 		}
-		bot.streamdeckHandler.AddOnPressHandler(bot.StreamDeckButtonWithHistoryAndCopy, func() error {
+		bot.streamdeckHandler.AddOnPressHandler(bot.ButtonConfig.Page, bot.ButtonConfig.ButtonIndexHistoryAndCopy, func() error {
 			go func() {
 				isRecording = true
 				utils.RecordAndSaveAudioAsMp3(fmt.Sprintf("audio%vHistPaste.wav", bot.Name), quitChannel, finished)
 			}()
 			return nil
 		})
-		bot.streamdeckHandler.AddOnReleaseHandler(
-			bot.StreamDeckButtonWithHistoryAndCopy,
-			func() error {
-				if !isRecording {
-					return nil
-				}
-				quitChannel <- true
-				<-finished
-				isRecording = false
-				transcription, err := utils.ParseMp3ToText(fmt.Sprintf("audio%vHistPaste.wav", bot.Name), bot.OpenaiClient)
-				if err != nil {
-					fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
-					return nil
-				}
-				respChan := clipboard.Watch(context.Background(), clipboard.FmtText)
-				err = utils.CopySelectionToClipboard(bot.keyBonding)
+		bot.streamdeckHandler.AddOnReleaseHandler(bot.ButtonConfig.Page, bot.ButtonConfig.ButtonIndexHistoryAndCopy, func() error {
+			if !isRecording {
+				return nil
+			}
+			quitChannel <- true
+			<-finished
+			isRecording = false
+			transcription, err := utils.ParseMp3ToText(fmt.Sprintf("audio%vHistPaste.wav", bot.Name), bot.OpenaiClient)
+			if err != nil {
+				fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
+				return nil
+			}
+			respChan := clipboard.Watch(context.Background(), clipboard.FmtText)
+			err = utils.CopySelectionToClipboard(bot.keyBonding)
+			if err != nil {
+				return err
+			}
+
+			// Wait for respChan 4 Seconds
+			clipboardContent := ""
+			var clipboardContentBytes []byte
+			select {
+			case <-time.After(4 * time.Second):
+				log.Println("timeout waiting for clipboard")
+				clipboardContentBytes = clipboard.Read(clipboard.FmtText)
+			case clipboardContentBytes = <-respChan:
+			}
+			if clipboardContentBytes != nil {
+				clipboardContent = string(clipboardContentBytes)
+			}
+			if string(clipboardContent) != "" {
+				transcription = fmt.Sprintf("%s\n%s", transcription, string(clipboardContent))
+			} else {
+				err := bot.speech.Speak("Kein text im Clipboard gefunden")
 				if err != nil {
 					return err
 				}
-
-				// Wait for respChan 4 Seconds
-				clipboardContent := ""
-				var clipboardContentBytes []byte
-				select {
-				case <-time.After(4 * time.Second):
-					log.Println("timeout waiting for clipboard")
-					clipboardContentBytes = clipboard.Read(clipboard.FmtText)
-				case clipboardContentBytes = <-respChan:
-				}
-				if clipboardContentBytes != nil {
-					clipboardContent = string(clipboardContentBytes)
-				}
-				if string(clipboardContent) != "" {
-					transcription = fmt.Sprintf("%s\n%s", transcription, string(clipboardContent))
-				} else {
-					err := bot.speech.Speak("Kein text im Clipboard gefunden")
-					if err != nil {
-						return err
-					}
-					return nil
-				}
-				bot.EvaluateGptResponseStringsWithHistory([]string{transcription})
 				return nil
-			})
+			}
+			err = bot.EvaluateGptResponseStringsWithHistory([]string{transcription})
+			if err != nil {
+				fmt.Printf("Error evaluating gpt response: %s\n", err)
+				return err
+			}
+			return nil
+		})
 	}
 }
 

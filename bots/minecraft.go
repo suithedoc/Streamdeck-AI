@@ -2,7 +2,6 @@ package bots
 
 import (
 	"OpenAITest/model"
-	streamdeck2 "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -104,40 +103,40 @@ func EvaluateMinecraftGptResponseStrings(input []string, chatContent model.ChatC
 	}
 }
 
-func InitMinecraftGPTBot(client *openai.Client, device streamdeck2.DeviceWrapper, properties map[string]string,
-	streamdeckHandler streamdeck2.IStreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding, button uint8) {
-	minecraftSystemMsg := properties["minecraftSystemMsg"]
-	minecraftPromptMsg := properties["minecraftPromptMsg"]
-
-	minecraftChatContent := model.ChatContent{
-		SystemMsg: minecraftSystemMsg,
-		PromptMsg: minecraftPromptMsg,
-	}
-	err := streamdeckHandler.AddButtonText(int(button), "Minecraft")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	streamdeckHandler.AddOnPressHandler(int(button), func() error {
-		go func() {
-			isRecording = true
-			utils.RecordAndSaveAudioAsMp3("minecraft.wav", quitChannel, finished)
-		}()
-		return nil
-	})
-	streamdeckHandler.AddOnReleaseHandler(int(button), func() error {
-		if isRecording {
-			quitChannel <- true
-			<-finished
-			fmt.Println("OnRealease: Stopping recording...")
-			isRecording = false
-			transcription, err := utils.ParseMp3ToText("minecraft.wav", client)
-			if err != nil {
-				fmt.Printf("Error parsing mp3 to text: %s\n", err)
-				return nil
-			}
-			EvaluateMinecraftGptResponseStrings([]string{transcription}, minecraftChatContent, client, speech, kb)
-		}
-		return nil
-	})
-}
+//func InitMinecraftGPTBot(client *openai.Client, device streamdeck2.DeviceWrapper, properties map[string]string,
+//	streamdeckHandler streamdeck2.IStreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding, button uint8) {
+//	minecraftSystemMsg := properties["minecraftSystemMsg"]
+//	minecraftPromptMsg := properties["minecraftPromptMsg"]
+//
+//	minecraftChatContent := model.ChatContent{
+//		SystemMsg: minecraftSystemMsg,
+//		PromptMsg: minecraftPromptMsg,
+//	}
+//	err := streamdeckHandler.AddButtonText(int(button), "Minecraft")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//
+//	streamdeckHandler.AddOnPressHandler(func() error {
+//		go func() {
+//			isRecording = true
+//			utils.RecordAndSaveAudioAsMp3("minecraft.wav", quitChannel, finished)
+//		}()
+//		return nil
+//	}, int(button))
+//	streamdeckHandler.AddOnReleaseHandler(func() error {
+//		if isRecording {
+//			quitChannel <- true
+//			<-finished
+//			fmt.Println("OnRealease: Stopping recording...")
+//			isRecording = false
+//			transcription, err := utils.ParseMp3ToText("minecraft.wav", client)
+//			if err != nil {
+//				fmt.Printf("Error parsing mp3 to text: %s\n", err)
+//				return nil
+//			}
+//			EvaluateMinecraftGptResponseStrings([]string{transcription}, minecraftChatContent, client, speech, kb)
+//		}
+//		return nil
+//	}, int(button))
+//}

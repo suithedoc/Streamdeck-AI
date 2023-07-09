@@ -1,16 +1,19 @@
 package streamdeck
 
 type IStreamdeckHandler interface {
-	AddOnPressHandler(buttonId int, handler func() error)
-	AddOnReleaseHandler(buttonId int, handler func() error)
-	GetOnPressHandler(buttonId int) (func() error, bool)
-	GetOnReleaseHandler(buttonId int) (func() error, bool)
-	SwitchPage(page int)
+	AddOnPressHandler(page Page, buttonId Index, handler func() error)
+	AddOnReleaseHandler(page Page, buttonId Index, handler func() error)
+	GetOnPressHandler(page Page, buttonId Index) (func() error, bool)
+	GetOnReleaseHandler(page Page, buttonId Index) (func() error, bool)
+	//SwitchPage(page Page)
 	GetDevice() DeviceWrapper
 	StartListenAsync() error
 
-	AddButtonText(buttonId int, text string) error
+	AddButtonText(page Page, buttonId Index, text string) error
+	GetButtonIndexToText() map[Page]map[Index]string
+	GetPage() Page
+	SetPage(page Page)
 	//TraverseButtonId(buttonId int) int
-	//ReverseTraverseButtonId(buttonId int) int
+	//ToConvinientVerticalId(buttonId int) int
 	//StartAsync()
 }

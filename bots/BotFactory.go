@@ -30,17 +30,15 @@ func NewBotFactory(streamdeckHandler sd.IStreamdeckHandler,
 }
 
 func (bf *BotFactory) createBaseBot(name string, systemMsg string, promptMsg string,
-	streamDeckButton int, speechLanguage string) *AiBot {
+	streamdeckButtonConfig sd.StreamdeckButtonConfig, speechLanguage string) *AiBot {
 	aiBot := &AiBot{
-		Name:                               name,
-		SystemMsg:                          systemMsg,
-		PromptMSg:                          promptMsg,
-		StreamDeckButton:                   streamDeckButton,
-		StreamDeckButtonWithHistory:        -1,
-		StreamDeckButtonWithHistoryAndCopy: -1,
-		StreamdeckDevice:                   bf.StreamdeckDevice,
-		streamdeckHandler:                  bf.streamdeckHandler,
-		OpenaiClient:                       bf.OpenaiClient,
+		Name:              name,
+		SystemMsg:         systemMsg,
+		PromptMSg:         promptMsg,
+		ButtonConfig:      streamdeckButtonConfig,
+		StreamdeckDevice:  bf.StreamdeckDevice,
+		streamdeckHandler: bf.streamdeckHandler,
+		OpenaiClient:      bf.OpenaiClient,
 		ChatContent: model.ChatContent{
 			SystemMsg:       systemMsg,
 			PromptMsg:       promptMsg,
@@ -58,34 +56,41 @@ func (bf *BotFactory) createBaseBot(name string, systemMsg string, promptMsg str
 	return aiBot
 }
 
+//func (bf *BotFactory) CreateBot(name string, systemMsg string, promptMsg string,
+//	streamDeckButton int, speechLanguage string) *AiBot {
+//	aiBot := bf.createBaseBot(name, systemMsg, promptMsg, streamDeckButton, speechLanguage)
+//	aiBot.init()
+//	return aiBot
+//}
+
 func (bf *BotFactory) CreateBot(name string, systemMsg string, promptMsg string,
-	streamDeckButton int, speechLanguage string) *AiBot {
-	aiBot := bf.createBaseBot(name, systemMsg, promptMsg, streamDeckButton, speechLanguage)
+	buttonConfig sd.StreamdeckButtonConfig, speechLanguage string) *AiBot {
+	aiBot := bf.createBaseBot(name, systemMsg, promptMsg, buttonConfig, speechLanguage)
 	aiBot.init()
 	return aiBot
 }
 
-func (bf *BotFactory) CreateBotWithHistory(name string, systemMsg string, promptMsg string,
-	streamDeckButton int, streamDeckButtonWithHistory int, speechLanguage string) *AiBot {
-	aiBot := bf.createBaseBot(name, systemMsg, promptMsg, streamDeckButton, speechLanguage)
-	aiBot.StreamDeckButtonWithHistory = streamDeckButtonWithHistory
-	aiBot.init()
-	return aiBot
-}
-
-func (bf *BotFactory) CreateBotWithCopy(name string, systemMsg string, promptMsg string,
-	streamDeckButton int, streamDeckButtonWithHistoryAndCopy int, speechLanguage string) *AiBot {
-	aiBot := bf.createBaseBot(name, systemMsg, promptMsg, streamDeckButton, speechLanguage)
-	aiBot.StreamDeckButtonWithHistoryAndCopy = streamDeckButtonWithHistoryAndCopy
-	aiBot.init()
-	return aiBot
-}
-
-func (bf *BotFactory) CreateBotWithHistoryAndCopy(name string, systemMsg string, promptMsg string,
-	streamDeckButton int, streamDeckButtonWithHistory int, streamDeckButtonWithHistoryAndCopy int, speechLanguage string) *AiBot {
-	aiBot := bf.createBaseBot(name, systemMsg, promptMsg, streamDeckButton, speechLanguage)
-	aiBot.StreamDeckButtonWithHistory = streamDeckButtonWithHistory
-	aiBot.StreamDeckButtonWithHistoryAndCopy = streamDeckButtonWithHistoryAndCopy
-	aiBot.init()
-	return aiBot
-}
+//func (bf *BotFactory) CreateBotWithHistory(name string, systemMsg string, promptMsg string,
+//	streamDeckButton int, streamDeckButtonWithHistory int, speechLanguage string) *AiBot {
+//	aiBot := bf.createBaseBot(name, systemMsg, promptMsg, streamDeckButton, speechLanguage)
+//	aiBot.StreamDeckButtonWithHistory = streamDeckButtonWithHistory
+//	aiBot.init()
+//	return aiBot
+//}
+//
+//func (bf *BotFactory) CreateBotWithCopy(name string, systemMsg string, promptMsg string,
+//	streamDeckButton int, streamDeckButtonWithHistoryAndCopy int, speechLanguage string) *AiBot {
+//	aiBot := bf.createBaseBot(name, systemMsg, promptMsg, streamDeckButton, speechLanguage)
+//	aiBot.StreamDeckButtonWithHistoryAndCopy = streamDeckButtonWithHistoryAndCopy
+//	aiBot.init()
+//	return aiBot
+//}
+//
+//func (bf *BotFactory) CreateBotWithHistoryAndCopy(name string, systemMsg string, promptMsg string,
+//	streamDeckButton int, streamDeckButtonWithHistory int, streamDeckButtonWithHistoryAndCopy int, speechLanguage string) *AiBot {
+//	aiBot := bf.createBaseBot(name, systemMsg, promptMsg, streamDeckButton, speechLanguage)
+//	aiBot.StreamDeckButtonWithHistory = streamDeckButtonWithHistory
+//	aiBot.StreamDeckButtonWithHistoryAndCopy = streamDeckButtonWithHistoryAndCopy
+//	aiBot.init()
+//	return aiBot
+//}

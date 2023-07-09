@@ -2,7 +2,6 @@ package bots
 
 import (
 	"OpenAITest/model"
-	streamdeck2 "OpenAITest/streamdeck"
 	"OpenAITest/utils"
 	"fmt"
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -59,38 +58,38 @@ func EvaluateCodeGptResponseStrings(input []string, chatContent model.ChatConten
 	}
 }
 
-func InitCodeGPTBot(client *openai.Client, device streamdeck2.DeviceWrapper, properties map[string]string,
-	streamdeckHandler streamdeck2.IStreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding, button uint8) {
-
-	codeChatContent := model.ChatContent{
-		SystemMsg: properties["codeSystemMsg"],
-		PromptMsg: properties["codePromptMsg"],
-	}
-
-	err := streamdeckHandler.AddButtonText(int(button), "Code")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	streamdeckHandler.AddOnPressHandler(int(button), func() error {
-		go func() {
-			isRecording = true
-			utils.RecordAndSaveAudioAsMp3("Code.wav", quitChannel, finished)
-		}()
-		return nil
-	})
-	streamdeckHandler.AddOnReleaseHandler(streamdeck2.ReverseTraverseButtonId(int(button), streamdeckHandler.GetDevice()), func() error {
-		if isRecording {
-			quitChannel <- true
-			<-finished
-			isRecording = false
-			transcription, err := utils.ParseMp3ToText("Code.wav", client)
-			if err != nil {
-				fmt.Printf("Error parsing mp3 to text: %s\n", err)
-				return nil
-			}
-			EvaluateCodeGptResponseStrings([]string{transcription}, codeChatContent, client, speech, kb)
-		}
-		return nil
-	})
-}
+//func InitCodeGPTBot(client *openai.Client, device streamdeck2.DeviceWrapper, properties map[string]string,
+//	streamdeckHandler streamdeck2.IStreamdeckHandler, speech *htgotts.Speech, kb *keybd_event.KeyBonding, button uint8) {
+//
+//	codeChatContent := model.ChatContent{
+//		SystemMsg: properties["codeSystemMsg"],
+//		PromptMsg: properties["codePromptMsg"],
+//	}
+//
+//	err := streamdeckHandler.AddButtonText(int(button), "Code")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//
+//	streamdeckHandler.AddOnPressHandler(func() error {
+//		go func() {
+//			isRecording = true
+//			utils.RecordAndSaveAudioAsMp3("Code.wav", quitChannel, finished)
+//		}()
+//		return nil
+//	}, int(button))
+//	streamdeckHandler.AddOnReleaseHandler(func() error {
+//		if isRecording {
+//			quitChannel <- true
+//			<-finished
+//			isRecording = false
+//			transcription, err := utils.ParseMp3ToText("Code.wav", client)
+//			if err != nil {
+//				fmt.Printf("Error parsing mp3 to text: %s\n", err)
+//				return nil
+//			}
+//			EvaluateCodeGptResponseStrings([]string{transcription}, codeChatContent, client, speech, kb)
+//		}
+//		return nil
+//	}, streamdeck2.ToConvinientVerticalId(int(button), streamdeckHandler.GetDevice()))
+//}

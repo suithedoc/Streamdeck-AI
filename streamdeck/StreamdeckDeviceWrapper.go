@@ -37,12 +37,14 @@ func (s *StreamdeckDeviceWrapper) SetImage(index uint8, img image.Image) error {
 	return s.device.SetImage(index, img)
 }
 
-func (dw *StreamdeckDeviceWrapper) SetText(index int, text string) error {
+// index: expect covinient numbering
+func (dw *StreamdeckDeviceWrapper) SetText(index Index, text string) error {
+	taverseId := TraverseButtonId(index, dw)
 	img, err := CreateTextImage(dw, text)
 	if err != nil {
 		return err
 	}
-	err = dw.SetImage(uint8(index), img)
+	err = dw.SetImage(uint8(taverseId), img)
 	if err != nil {
 		fmt.Println("setting image: ", err)
 		return err

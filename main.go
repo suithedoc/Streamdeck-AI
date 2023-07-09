@@ -327,13 +327,26 @@ func main() {
 
 	botFactory := bots.NewBotFactory(streamdeckHandler, client, device, &kb)
 
-	assistantBot := botFactory.CreateBotWithHistoryAndCopy("Assistant", properties["assistantSystemMsg"], properties["assistantPromptMsg"], 3, 4, 5, voices.German)
+	assistantButtonConfig := sd.StreamdeckButtonConfig{
+		ButtonIndex:               0,
+		ButtonIndexHistory:        1,
+		ButtonIndexHistoryAndCopy: 2,
+		Page:                      0,
+	}
+	assistantBot := botFactory.CreateBot("Assistant", properties["assistantSystemMsg"], properties["assistantPromptMsg"], assistantButtonConfig, voices.German)
 	assistantBot.AddResponseListener(func(bot *bots.AiBot, s string) error {
 		fmt.Printf("Assistant: %s\n", s)
 		return nil
 	})
 	assistantBot.AddResponseListener(bots.SpeakResultFunc)
-	commanderBot := botFactory.CreateBotWithHistoryAndCopy("Commander", properties["commanderSystemMsg"], properties["commanderPromptMsg"], 0, 1, 2, voices.German)
+
+	commanderButtonConfig := sd.StreamdeckButtonConfig{
+		ButtonIndex:               0,
+		ButtonIndexHistory:        1,
+		ButtonIndexHistoryAndCopy: 2,
+		Page:                      1,
+	}
+	commanderBot := botFactory.CreateBot("Commander", properties["commanderSystemMsg"], properties["commanderPromptMsg"], commanderButtonConfig, voices.German)
 	commanderBot.AddResponseListener(bots.ExecuteCommandResultFunc)
 
 	//labelBot := botFactory.CreateBotWithHistory("Label",
@@ -342,7 +355,7 @@ func main() {
 	//		"If the request contains a development question, respond with 'code'."+
 	//		"If the request could be resolved by a linux command, respond with 'linux'.",
 	//	"",
-	//	6, 7, voices.German)
+	//	15, 16, voices.German)
 	//labelBot.AddResponseListener(func(bot *bots.AiBot, s string) error {
 	//
 	//	fmt.Printf("Label: %s\n", s)
@@ -360,24 +373,24 @@ func main() {
 	//	return nil
 	//})
 
-	codeBot := botFactory.CreateBotWithHistoryAndCopy("Cpp", properties["cppSystemMsg"], properties["cppPromptMsg"], 8, 11, 10, voices.German)
-	codeBot.AddResponseListener(func(bot *bots.AiBot, answer string) error {
-		codeBlocks := utils.ExtractCodeBlockFromMarkdown(answer)
-		if len(codeBlocks) == 0 {
-			codeBlocks = utils.ExtractCodeBlockFromMarkdownWithOneBacktick(answer)
-		}
-		if len(codeBlocks) == 0 {
-			log.Println("No code block found")
-			fmt.Println("No Code blocks found in this: ", answer)
-		}
-		fmt.Println("Code blocks found: ", len(codeBlocks))
-		allCodeBlocks := strings.Join(codeBlocks, "\n")
-		err = utils.TypeCodeCommand(allCodeBlocks, &kb)
-		if err != nil {
-			fmt.Printf("Error typing command: %v\n", err)
-		}
-		return nil
-	})
+	//codeBot := botFactory.CreateBotWithHistoryAndCopy("Cpp", properties["cppSystemMsg"], properties["cppPromptMsg"], 8, 11, 10, voices.German)
+	//codeBot.AddResponseListener(func(bot *bots.AiBot, answer string) error {
+	//	codeBlocks := utils.ExtractCodeBlockFromMarkdown(answer)
+	//	if len(codeBlocks) == 0 {
+	//		codeBlocks = utils.ExtractCodeBlockFromMarkdownWithOneBacktick(answer)
+	//	}
+	//	if len(codeBlocks) == 0 {
+	//		log.Println("No code block found")
+	//		fmt.Println("No Code blocks found in this: ", answer)
+	//	}
+	//	fmt.Println("Code blocks found: ", len(codeBlocks))
+	//	allCodeBlocks := strings.Join(codeBlocks, "\n")
+	//	err = utils.TypeCodeCommand(allCodeBlocks, &kb)
+	//	if err != nil {
+	//		fmt.Printf("Error typing command: %v\n", err)
+	//	}
+	//	return nil
+	//})
 
 	//englishTeacherBot := botFactory.CreateBotWithHistory("English",
 	//	properties["englishTeacherSystemMsg"],

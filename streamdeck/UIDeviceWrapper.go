@@ -11,9 +11,10 @@ import (
 )
 
 type ButtonEvent struct {
-	ButtonId   int
-	IsPressed  bool
-	IsReleased bool
+	ButtonIndex Index
+	Page        Page
+	IsPressed   bool
+	IsReleased  bool
 }
 
 type UiDeviceWrapper struct {
@@ -37,9 +38,12 @@ func (dw *UiDeviceWrapper) Clear() error {
 	return nil
 }
 
-func (dw *UiDeviceWrapper) SetText(index int, text string) error {
-	fmt.Printf("SetText: %d, %s\n", index, text)
-	dw.buttons[index].SetText(text)
+// index: expect covinient numbering
+func (dw *UiDeviceWrapper) SetText(index Index, text string) error {
+	fmt.Printf("SetText - index: %d, %s\n", index, text)
+	taverseId := TraverseButtonId(index, dw)
+	fmt.Printf("SetText - traverse index: %d, %s\n", taverseId, text)
+	dw.buttons[taverseId].SetText(text)
 	return nil
 }
 
@@ -88,20 +92,20 @@ func InitUiStreamdeck() (*UiDeviceWrapper, error) {
 	return uiWrapper, nil
 }
 
-func (dw *UiDeviceWrapper) makeButton(buttonId int) *CustomButton {
+func (dw *UiDeviceWrapper) makeButton(buttonId Index) *CustomButton {
 	button := &CustomButton{}
-	button.Text = strconv.Itoa(buttonId)
+	button.Text = strconv.Itoa(int(buttonId))
 	button.ExtendBaseWidget(button)
 
 	button.OnTapped = func() {
 		if button.isActive {
 			dw.textView.SetText(removeLastChar(dw.textView.Text))
 			button.isActive = false
-			dw.buttonEvent <- ButtonEvent{ButtonId: buttonId, IsPressed: false, IsReleased: true}
+			dw.buttonEvent <- ButtonEvent{ButtonIndex: buttonId, IsPressed: false, IsReleased: true}
 		} else {
-			dw.textView.SetText(dw.textView.Text + strconv.Itoa(buttonId))
+			dw.textView.SetText(dw.textView.Text + strconv.Itoa(int(buttonId)))
 			button.isActive = true
-			dw.buttonEvent <- ButtonEvent{ButtonId: buttonId, IsPressed: true, IsReleased: false}
+			dw.buttonEvent <- ButtonEvent{ButtonIndex: buttonId, IsPressed: true, IsReleased: false}
 		}
 	}
 	dw.buttons = append(dw.buttons, button)

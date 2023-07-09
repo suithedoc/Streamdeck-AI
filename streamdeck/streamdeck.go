@@ -13,6 +13,13 @@ import (
 	"strings"
 )
 
+type StreamdeckButtonConfig struct {
+	ButtonIndex               Index //set to -1 to disable
+	ButtonIndexHistory        Index //set to -1 to disable
+	ButtonIndexHistoryAndCopy Index //set to -1 to disable
+	Page                      Page
+}
+
 func ftContext(img *image.RGBA, ttf *truetype.Font, dpi uint, fontsize float64) *freetype.Context {
 	c := freetype.NewContext()
 	c.SetDPI(float64(dpi))
