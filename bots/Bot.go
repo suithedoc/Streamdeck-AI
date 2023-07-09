@@ -25,17 +25,23 @@ type AiBot struct {
 	//StreamDeckButton                   int // Set to -1 to disable
 	//StreamDeckButtonWithHistory        int // Set to -1 to disable
 	//StreamDeckButtonWithHistoryAndCopy int // Set to -1 to disable
-	streamdeckHandler sd.IStreamdeckHandler
-	OpenaiClient      *openai.Client
-	ChatContent       model.ChatContent
-	speech            *htgotts.Speech
-	keyBonding        *keybd_event.KeyBonding
-	CompletionHistory []openai.ChatCompletionMessage
-	responseListeners []func(*AiBot, string) error
+	streamdeckHandler      sd.IStreamdeckHandler
+	OpenaiClient           *openai.Client
+	ChatContent            model.ChatContent
+	speech                 *htgotts.Speech
+	keyBonding             *keybd_event.KeyBonding
+	CompletionHistory      []openai.ChatCompletionMessage
+	responseListeners      []func(*AiBot, string) error
+	transcriptionListeners []func(*AiBot, string) error
+	DisableAi              bool
 }
 
 func (bot *AiBot) AddResponseListener(listener func(*AiBot, string) error) {
 	bot.responseListeners = append(bot.responseListeners, listener)
+}
+
+func (bot *AiBot) AddTranscriptionListener(listener func(*AiBot, string) error) {
+	bot.transcriptionListeners = append(bot.transcriptionListeners, listener)
 }
 
 func (bot *AiBot) init() {
@@ -62,6 +68,16 @@ func (bot *AiBot) init() {
 				transcription, err := utils.ParseMp3ToText(fmt.Sprintf("audio%v.wav", bot.Name), bot.OpenaiClient)
 				if err != nil {
 					fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
+					return nil
+				}
+				for _, listener := range bot.transcriptionListeners {
+					err = listener(bot, transcription)
+					if err != nil {
+						fmt.Printf("Error in transcription listener: %s\n", err)
+					}
+				}
+				if bot.DisableAi == true {
+					fmt.Printf("AI disabled for bot so ignore hostory gtp\n")
 					return nil
 				}
 				err = bot.EvaluateGptResponseStrings([]string{transcription})
@@ -93,6 +109,16 @@ func (bot *AiBot) init() {
 				transcription, err := utils.ParseMp3ToText(fmt.Sprintf("audio%vHist.wav", bot.Name), bot.OpenaiClient)
 				if err != nil {
 					fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
+					return nil
+				}
+				for _, listener := range bot.transcriptionListeners {
+					err = listener(bot, transcription)
+					if err != nil {
+						fmt.Printf("Error in transcription listener: %s\n", err)
+					}
+				}
+				if bot.DisableAi == true {
+					fmt.Printf("AI disabled for bot so ignore hostory gtp\n")
 					return nil
 				}
 				err = bot.EvaluateGptResponseStringsWithHistory([]string{transcription})
@@ -127,6 +153,16 @@ func (bot *AiBot) init() {
 			transcription, err := utils.ParseMp3ToText(fmt.Sprintf("audio%vHistPaste.wav", bot.Name), bot.OpenaiClient)
 			if err != nil {
 				fmt.Printf("Error parsing mp3 to text 2: %s\n", err)
+				return nil
+			}
+			for _, listener := range bot.transcriptionListeners {
+				err = listener(bot, transcription)
+				if err != nil {
+					fmt.Printf("Error in transcription listener: %s\n", err)
+				}
+			}
+			if bot.DisableAi == true {
+				fmt.Printf("AI disabled for bot so ignore hostory gtp\n")
 				return nil
 			}
 			respChan := clipboard.Watch(context.Background(), clipboard.FmtText)

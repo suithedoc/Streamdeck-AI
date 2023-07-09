@@ -341,10 +341,10 @@ func main() {
 	assistantBot.AddResponseListener(bots.SpeakResultFunc)
 
 	commanderButtonConfig := sd.StreamdeckButtonConfig{
-		ButtonIndex:               0,
-		ButtonIndexHistory:        1,
-		ButtonIndexHistoryAndCopy: 2,
-		Page:                      1,
+		ButtonIndex:               3,
+		ButtonIndexHistory:        4,
+		ButtonIndexHistoryAndCopy: 5,
+		Page:                      0,
 	}
 	commanderBot := botFactory.CreateBot("Commander", properties["commanderSystemMsg"], properties["commanderPromptMsg"], commanderButtonConfig, voices.German)
 	commanderBot.AddResponseListener(bots.ExecuteCommandResultFunc)
@@ -373,24 +373,58 @@ func main() {
 	//	return nil
 	//})
 
-	//codeBot := botFactory.CreateBotWithHistoryAndCopy("Cpp", properties["cppSystemMsg"], properties["cppPromptMsg"], 8, 11, 10, voices.German)
-	//codeBot.AddResponseListener(func(bot *bots.AiBot, answer string) error {
-	//	codeBlocks := utils.ExtractCodeBlockFromMarkdown(answer)
-	//	if len(codeBlocks) == 0 {
-	//		codeBlocks = utils.ExtractCodeBlockFromMarkdownWithOneBacktick(answer)
-	//	}
-	//	if len(codeBlocks) == 0 {
-	//		log.Println("No code block found")
-	//		fmt.Println("No Code blocks found in this: ", answer)
-	//	}
-	//	fmt.Println("Code blocks found: ", len(codeBlocks))
-	//	allCodeBlocks := strings.Join(codeBlocks, "\n")
-	//	err = utils.TypeCodeCommand(allCodeBlocks, &kb)
-	//	if err != nil {
-	//		fmt.Printf("Error typing command: %v\n", err)
-	//	}
-	//	return nil
-	//})
+	codeButtonConfig := sd.StreamdeckButtonConfig{
+		ButtonIndex:               8,
+		ButtonIndexHistory:        11,
+		ButtonIndexHistoryAndCopy: 10,
+		Page:                      0,
+	}
+	codeBot := botFactory.CreateBot("Cpp", properties["cppSystemMsg"], properties["cppPromptMsg"], codeButtonConfig, voices.German)
+	codeBot.AddResponseListener(func(bot *bots.AiBot, answer string) error {
+		codeBlocks := utils.ExtractCodeBlockFromMarkdown(answer)
+		if len(codeBlocks) == 0 {
+			codeBlocks = utils.ExtractCodeBlockFromMarkdownWithOneBacktick(answer)
+		}
+		if len(codeBlocks) == 0 {
+			log.Println("No code block found")
+			fmt.Println("No Code blocks found in this: ", answer)
+		}
+		fmt.Println("Code blocks found: ", len(codeBlocks))
+		allCodeBlocks := strings.Join(codeBlocks, "\n")
+		err = utils.TypeCodeCommand(allCodeBlocks, &kb)
+		if err != nil {
+			fmt.Printf("Error typing command: %v\n", err)
+		}
+		return nil
+	})
+
+	whisperButtonConfig := sd.StreamdeckButtonConfig{
+		ButtonIndex:               6,
+		ButtonIndexHistory:        -1,
+		ButtonIndexHistoryAndCopy: -1,
+		Page:                      0,
+	}
+	whisperBot := botFactory.CreateBot("STT", "", "", whisperButtonConfig, voices.German)
+	whisperBot.DisableAi = true
+	whisperBot.AddResponseListener(func(bot *bots.AiBot, s string) error {
+		fmt.Printf("Assistant: %s\n", s)
+		return nil
+	})
+	whisperBot.AddTranscriptionListener(func(bot *bots.AiBot, s string) error {
+		fmt.Printf("Assistant: %s\n", s)
+		err = bots.TypeWhisperSTT(s, &kb)
+		if err != nil {
+			fmt.Printf("Error typing command: %v\n", err)
+			return err
+		}
+		return nil
+	})
+
+	//err = TypeWhisperSTT(transcription, kb)
+	//if err != nil {
+	//	return err
+	//}
+	//whisperBot.AddResponseListener(bots.SpeakResultFunc)
 
 	//englishTeacherBot := botFactory.CreateBotWithHistory("English",
 	//	properties["englishTeacherSystemMsg"],
