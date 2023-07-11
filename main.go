@@ -374,12 +374,12 @@ func main() {
 	//})
 
 	codeButtonConfig := sd.StreamdeckButtonConfig{
-		ButtonIndex:               8,
-		ButtonIndexHistory:        11,
-		ButtonIndexHistoryAndCopy: 10,
+		ButtonIndex:               9,
+		ButtonIndexHistory:        10,
+		ButtonIndexHistoryAndCopy: 11,
 		Page:                      0,
 	}
-	codeBot := botFactory.CreateBot("Cpp", properties["cppSystemMsg"], properties["cppPromptMsg"], codeButtonConfig, voices.German)
+	codeBot := botFactory.CreateBot("Code", properties["codeSystemMsg"], properties["codePromptMsg"], codeButtonConfig, voices.German)
 	codeBot.AddResponseListener(func(bot *bots.AiBot, answer string) error {
 		codeBlocks := utils.ExtractCodeBlockFromMarkdown(answer)
 		if len(codeBlocks) == 0 {

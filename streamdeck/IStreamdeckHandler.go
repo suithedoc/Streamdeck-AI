@@ -13,7 +13,6 @@ type IStreamdeckHandler interface {
 	GetButtonIndexToText() map[Page]map[Index]string
 	GetPage() Page
 	SetPage(page Page)
-	//TraverseButtonId(buttonId int) int
-	//ToConvinientVerticalId(buttonId int) int
-	//StartAsync()
+	//SetMessage(message string)
+	//GetMessage() string
 }
