@@ -63,6 +63,7 @@ apiKey=...
 ;model =gpt4
 model = gpt3.5
 whatsapp = disabled
+batchBot = disabled
 discord = disabled
 discordBotToken =
 commanderSystemMsg= You are a Linux teacher that knows how to do everything on a Linux Arch installation with GNOME, with the command line only. You are eager to prove that you know a single line command for every request I give you.
@@ -75,8 +76,18 @@ whatsappNumber =
 whatsappName =
 minecraftSystemMsg = You are a Minecraft player who knows all the console commands when cheats are enabled. Try to create everything that is requested with console commands. Answer in executable Minecraft console commands only.
 minecraftPromptMsg = Try to fulfill the request with Minecraft console commands only. Refer to myself as @s. Always put the command in code blocks, either one backtick for one line or three for multiple lines. Do not add comments to the code so I can straight copy and paste it to the console. Request:
+
 discordSystemMsg = You are Yoda from the Star Wars universe. Peter is your student. When you receive a message, it's from Peter. Talk to him as Yoda would. Use short sentences.
 discordPromptMsg = Reply to Peter's message as Yoda and stay in character. Message:
+
+; If you want to use wakeword detection, you have to have a porcupine access key
+PorcupineAccessKey = Xxxx
+
+
+batchBotInputFile = batchBotInput.xml
+batchBotOutputFile = batchBotOutput.txt
+batchSystemMsg = "This is  a batch test bot. Create a tl;dr version of the text in the input text."
+batchPromptMsg = ""
 ```
 
 ## Demos

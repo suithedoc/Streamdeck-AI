@@ -17,14 +17,11 @@ import (
 )
 
 type AiBot struct {
-	Name             string
-	SystemMsg        string
-	PromptMSg        string
-	StreamdeckDevice sd.DeviceWrapper
-	ButtonConfig     sd.StreamdeckButtonConfig
-	//StreamDeckButton                   int // Set to -1 to disable
-	//StreamDeckButtonWithHistory        int // Set to -1 to disable
-	//StreamDeckButtonWithHistoryAndCopy int // Set to -1 to disable
+	Name                   string
+	SystemMsg              string
+	PromptMSg              string
+	StreamdeckDevice       sd.DeviceWrapper
+	ButtonConfig           sd.StreamdeckButtonConfig
 	streamdeckHandler      sd.IStreamdeckHandler
 	OpenaiClient           *openai.Client
 	ChatContent            model.ChatContent

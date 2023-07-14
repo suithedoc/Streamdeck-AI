@@ -8,6 +8,7 @@ import (
 	"OpenAITest/wakeword"
 	"bufio"
 	"bytes"
+	"encoding/xml"
 	"fmt"
 	"git.tcp.direct/kayos/sendkeys"
 	markdown "github.com/MichaelMure/go-term-markdown"
@@ -38,6 +39,26 @@ var (
 	speech *htgotts.Speech
 	kbw    *sendkeys.KBWrap
 )
+
+type Batch struct {
+	XMLName xml.Name `xml:"batch"`
+	Inputs  []Input  `xml:"input"`
+}
+
+type Input struct {
+	Name   string `xml:"name,attr"`
+	Detail string `xml:",innerxml"`
+}
+
+type BatchOutput struct {
+	XMLName xml.Name `xml:"batch"`
+	Outputs []Output `xml:"output"`
+}
+
+type Output struct {
+	Name   string `xml:"name,attr"`
+	Detail string `xml:",innerxml"`
+}
 
 type EchoWithColor struct {
 	c   *fcolor.Color
@@ -420,6 +441,75 @@ func main() {
 		return nil
 	})
 
+	inputName := ""
+	if properties["batchBot"] == "enabled" {
+
+		batchBotButtonConfig := sd.StreamdeckButtonConfig{
+			ButtonIndex:               -1,
+			ButtonIndexHistory:        -1,
+			ButtonIndexHistoryAndCopy: -1,
+			Page:                      0,
+		}
+		batchBot := botFactory.CreateBot("Batch", properties["batchSystemMsg"], properties["batchPromptMsg"], batchBotButtonConfig, voices.German)
+		batchBot.AddResponseListener(func(bot *bots.AiBot, s string) error {
+
+			//Create or open file
+			file, err := os.OpenFile(properties["batchBotOutputFile"], os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if inputName != "" {
+				_, err := file.WriteString("\n\n")
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if inputName != "" {
+				_, err := file.WriteString(inputName + "\n")
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			//Append string to file
+			if _, err := file.WriteString(s + "\n"); err != nil {
+				log.Fatal(err)
+			}
+
+			//Close file
+			if err := file.Close(); err != nil {
+				log.Fatal(err)
+			}
+
+			return nil
+		})
+		//Read and parse XML file
+		xmlFile, err := os.Open(properties["batchBotInputFile"])
+		if err != nil {
+			fmt.Println("Error opening file:", err)
+			return
+		}
+		defer xmlFile.Close()
+		var b Batch
+		byteValue, _ := ioutil.ReadAll(xmlFile)
+		err = xml.Unmarshal(byteValue, &b)
+		if err != nil {
+			return
+		}
+		for _, input := range b.Inputs {
+			//fmt.Println("Name:", input.Name)
+			//fmt.Println("Detail:", input.Detail)
+			inputName = input.Name
+			err = batchBot.EvaluateGptResponseStringsWithHistory([]string{input.Detail})
+		}
+
+	}
+
+	//if properties["batchBot"] == "enabled" {
+
+	//}
+
 	//err = TypeWhisperSTT(transcription, kb)
 	//if err != nil {
 	//	return err
@@ -501,7 +591,7 @@ func startCommandlineInput(assistantBot *bots.AiBot, commanderBot *bots.AiBot) {
 
 	for {
 		if !isRecording {
-			fmt.Print("Enter Multiline Input: \n")
+			fmt.Print("Enter Multiline Inputs: \n")
 		} else {
 			fmt.Print("Stop recording with 'r' \n")
 		}

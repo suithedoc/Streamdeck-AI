@@ -37,7 +37,10 @@ func LoadPropertiesFromJsonFile(filename string) (map[string]interface{}, error)
 
 func LoadPropertiesFromIniFile(filepath string) (map[string]string, error) {
 	// Load the INI file
-	cfg, err := ini.Load(filepath)
+
+	cfg, err := ini.LoadSources(ini.LoadOptions{
+		AllowPythonMultilineValues: true,
+	}, filepath)
 	if err != nil {
 		return nil, fmt.Errorf("error loading INI file: %v", err)
 	}

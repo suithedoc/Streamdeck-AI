@@ -114,13 +114,13 @@ func RunAndWaitForCommandSelection(scanner *bufio.Scanner, commands []string) in
 		fmt.Print("Enter Command Number: \n")
 		scanner.Scan()
 		text := scanner.Text()
-		fmt.Println("Input is: ", text)
+		fmt.Println("Inputs is: ", text)
 
 		trimmedText := strings.TrimSpace(text)
 		if len(trimmedText) != 0 {
 			atoi, err := strconv.Atoi(trimmedText)
 			if err != nil {
-				fmt.Println("Invalid Input")
+				fmt.Println("Invalid Inputs")
 				continue
 			}
 			return atoi
