@@ -5,7 +5,6 @@ type IStreamdeckHandler interface {
 	AddOnReleaseHandler(page Page, buttonId Index, handler func() error)
 	GetOnPressHandler(page Page, buttonId Index) (func() error, bool)
 	GetOnReleaseHandler(page Page, buttonId Index) (func() error, bool)
-	//SwitchPage(page Page)
 	GetDevice() DeviceWrapper
 	StartListenAsync() error
 
@@ -13,6 +12,4 @@ type IStreamdeckHandler interface {
 	GetButtonIndexToText() map[Page]map[Index]string
 	GetPage() Page
 	SetPage(page Page)
-	//SetMessage(message string)
-	//GetMessage() string
 }

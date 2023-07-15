@@ -1,4 +1,4 @@
-//go:build !service
+//go:build service
 
 package main
 
@@ -291,10 +291,10 @@ func main() {
 	//}
 	streamdeckHandler, err = sd.NewStreamdeckHandler()
 	if err != nil || streamdeckHandler == nil {
-		streamdeckHandler, err = sd.NewUiStreamdeckHandler()
-		if err != nil {
-			log.Fatal(err)
-		}
+		streamdeckHandler = sd.NullStreamdeckHandler{}
+		//if err != nil {
+		//	log.Fatal(err)
+		//}
 	}
 	device := streamdeckHandler.GetDevice()
 	if device == nil {
