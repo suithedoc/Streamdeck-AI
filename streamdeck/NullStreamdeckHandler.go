@@ -12,7 +12,7 @@ func (nsh NullStreamdeckHandler) GetOnReleaseHandler(page Page, buttonId Index) 
 	return nil, false
 }
 func (nsh NullStreamdeckHandler) GetDevice() DeviceWrapper {
-	return nil
+	return NullDeviceWrapper{}
 }
 func (nsh NullStreamdeckHandler) StartListenAsync() error {
 	return nil

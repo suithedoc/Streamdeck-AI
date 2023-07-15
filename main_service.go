@@ -289,13 +289,13 @@ func main() {
 	//if err != nil {
 	//	log.Fatal(err)
 	//}
-	streamdeckHandler, err = sd.NewStreamdeckHandler()
-	if err != nil || streamdeckHandler == nil {
-		streamdeckHandler = sd.NullStreamdeckHandler{}
-		//if err != nil {
-		//	log.Fatal(err)
-		//}
-	}
+	//streamdeckHandler, err = sd.NewStreamdeckHandler()
+	//if err != nil || streamdeckHandler == nil {
+	streamdeckHandler = sd.NullStreamdeckHandler{}
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//}
 	device := streamdeckHandler.GetDevice()
 	if device == nil {
 		log.Fatal("No device found")
