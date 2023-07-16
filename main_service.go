@@ -312,7 +312,7 @@ func main() {
 	}(device)
 	kb, err = keybd_event.NewKeyBonding()
 	if err != nil {
-		panic(err)
+		log.Printf("Error creating keybonding: %s\n", err)
 	}
 
 	kbw, err = sendkeys.NewKBWrapWithOptions(sendkeys.Noisy)
