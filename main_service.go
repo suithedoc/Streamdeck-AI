@@ -582,7 +582,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	startCommandlineInput(assistantBot, commanderBot)
+	//startCommandlineInput(assistantBot, commanderBot)
 }
 
 func startCommandlineInput(assistantBot *bots.AiBot, commanderBot *bots.AiBot) {
