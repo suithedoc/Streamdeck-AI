@@ -333,7 +333,7 @@ func main() {
 
 	err = clipboard.Init()
 	if err != nil {
-		panic(err)
+		log.Printf("Error initializing clipboard: %s\n", err)
 	}
 
 	//speech = &htgotts.Speech{Folder: "audio", Language: voices.English, Handler: &handlers.Native{}}
